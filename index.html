@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Workout Finder</title>
+<style>
+  :root {
+    --bg: #0f1419;
+    --bg-soft: #1a212b;
+    --card: #1e2733;
+    --card-hover: #26313f;
+    --accent: #ff5a5f;
+    --accent-soft: #ff5a5f33;
+    --accent-2: #4dd0e1;
+    --text: #eef2f6;
+    --text-dim: #9aa7b4;
+    --muscle: #3a4757;
+    --muscle-hover: #ff8a8d;
+    --muscle-active: #ff5a5f;
+    --radius: 16px;
+    --shadow: 0 10px 30px rgba(0,0,0,0.35);
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: radial-gradient(1200px 600px at 50% -10%, #1d2733 0%, var(--bg) 60%);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  header {
+    text-align: center;
+    padding: 26px 16px 8px;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 1.7rem;
+    letter-spacing: -0.5px;
+  }
+  header h1 .accent { color: var(--accent); }
+  header p {
+    margin: 6px 0 0;
+    color: var(--text-dim);
+    font-size: 0.92rem;
+  }
+
+  .wrap {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 16px;
+    display: grid;
+    grid-template-columns: minmax(280px, 1fr) minmax(300px, 1.05fr);
+    gap: 20px;
+    align-items: start;
+  }
+
+  @media (max-width: 760px) {
+    .wrap { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    background: var(--bg-soft);
+    border: 1px solid #2a3543;
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow);
+  }
+
+  /* View toggle */
+  .toggle {
+    display: flex;
+    gap: 6px;
+    background: var(--card);
+    padding: 5px;
+    border-radius: 999px;
+    width: fit-content;
+    margin: 0 auto 14px;
+  }
+  .toggle button {
+    border: none;
+    background: transparent;
+    color: var(--text-dim);
+    padding: 8px 22px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.18s;
+  }
+  .toggle button.on {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .figure-stage { position: relative; }
+  svg.body { width: 100%; height: auto; display: none; }
+  svg.body.on { display: block; }
+
+  .muscle {
+    fill: var(--muscle);
+    stroke: #0f1419;
+    stroke-width: 1.2;
+    cursor: pointer;
+    transition: fill 0.15s ease;
+  }
+  .muscle:hover { fill: var(--muscle-hover); }
+  .muscle.selected { fill: var(--muscle-active); }
+  .body-base {
+    fill: #2a3441;
+    stroke: #0f1419;
+    stroke-width: 1.2;
+  }
+
+  .hint {
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 0.82rem;
+    margin-top: 6px;
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    justify-content: center;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid #2a3543;
+  }
+  .chips button {
+    border: 1px solid #33414f;
+    background: var(--card);
+    color: var(--text-dim);
+    padding: 7px 12px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.15s;
+  }
+  .chips button:hover { color: var(--text); border-color: var(--accent); }
+  .chips button.on {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  /* Results panel */
+  #results .placeholder {
+    color: var(--text-dim);
+    text-align: center;
+    padding: 40px 10px;
+  }
+  #results .placeholder .big { font-size: 2.2rem; margin-bottom: 8px; }
+
+  .group-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+  .group-head h2 {
+    margin: 0;
+    font-size: 1.3rem;
+  }
+  .group-head .dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--accent);
+    flex: none;
+  }
+  .group-sub {
+    color: var(--text-dim);
+    font-size: 0.86rem;
+    margin: 0 0 14px;
+  }
+
+  .ex {
+    background: var(--card);
+    border: 1px solid #2a3543;
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: 0.15s;
+  }
+  .ex:hover { background: var(--card-hover); }
+  .ex .info { flex: 1; min-width: 0; }
+  .ex .name { font-weight: 600; font-size: 0.98rem; }
+  .ex .desc { color: var(--text-dim); font-size: 0.82rem; margin-top: 2px; }
+  .ex .badge {
+    display: inline-block;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--accent-2);
+    border: 1px solid #2f4a50;
+    border-radius: 999px;
+    padding: 2px 8px;
+    margin-top: 6px;
+  }
+  .ex a.watch {
+    flex: none;
+    text-decoration: none;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 9px 12px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+  .ex a.watch:active { transform: scale(0.96); }
+
+  footer {
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 0.78rem;
+    padding: 10px 16px 30px;
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Workout <span class="accent">Finder</span></h1>
+    <p>Tap a muscle group on the body to see exercises that train it.</p>
+  </header>
+
+  <div class="wrap">
+    <!-- LEFT: body diagram -->
+    <div class="panel">
+      <div class="toggle">
+        <button id="btn-front" class="on" onclick="setView('front')">Front</button>
+        <button id="btn-back" onclick="setView('back')">Back</button>
+      </div>
+
+      <div class="figure-stage">
+        <!-- FRONT -->
+        <svg class="body on" id="svg-front" viewBox="0 0 240 560" xmlns="http://www.w3.org/2000/svg">
+          <!-- base body silhouette -->
+          <g class="base">
+            <ellipse class="body-base" cx="120" cy="40" rx="23" ry="27"/>
+            <rect class="body-base" x="108" y="62" width="24" height="20" rx="8"/>
+            <path class="body-base" d="M70 95 Q120 80 170 95 L182 250 Q120 270 58 250 Z"/>
+            <!-- arms base -->
+            <path class="body-base" d="M62 100 Q40 150 46 250 L62 250 Q70 160 78 110 Z"/>
+            <path class="body-base" d="M178 100 Q200 150 194 250 L178 250 Q170 160 162 110 Z"/>
+            <!-- hands -->
+            <ellipse class="body-base" cx="48" cy="262" rx="11" ry="14"/>
+            <ellipse class="body-base" cx="192" cy="262" rx="11" ry="14"/>
+            <!-- legs base -->
+            <path class="body-base" d="M64 250 Q120 268 176 250 L172 400 Q160 540 150 540 L138 410 Q120 420 102 410 L90 540 Q80 540 68 400 Z"/>
+            <!-- feet -->
+            <ellipse class="body-base" cx="80" cy="548" rx="14" ry="8"/>
+            <ellipse class="body-base" cx="160" cy="548" rx="14" ry="8"/>
+          </g>
+
+          <!-- shoulders / delts -->
+          <ellipse class="muscle" data-group="shoulders" cx="72" cy="106" rx="16" ry="14"/>
+          <ellipse class="muscle" data-group="shoulders" cx="168" cy="106" rx="16" ry="14"/>
+          <!-- chest -->
+          <path class="muscle" data-group="chest" d="M118 100 Q90 96 76 112 Q74 140 100 148 Q118 150 118 130 Z"/>
+          <path class="muscle" data-group="chest" d="M122 100 Q150 96 164 112 Q166 140 140 148 Q122 150 122 130 Z"/>
+          <!-- biceps -->
+          <path class="muscle" data-group="biceps" d="M64 130 Q54 170 56 200 L72 200 Q74 165 78 135 Z"/>
+          <path class="muscle" data-group="biceps" d="M176 130 Q186 170 184 200 L168 200 Q166 165 162 135 Z"/>
+          <!-- forearms -->
+          <path class="muscle" data-group="forearms" d="M56 205 Q50 235 50 252 L64 252 Q68 230 70 207 Z"/>
+          <path class="muscle" data-group="forearms" d="M184 205 Q190 235 190 252 L176 252 Q172 230 170 207 Z"/>
+          <!-- abs / core -->
+          <rect class="muscle" data-group="core" x="102" y="152" width="36" height="92" rx="12"/>
+          <!-- quads -->
+          <path class="muscle" data-group="quads" d="M72 262 Q66 340 84 398 L102 400 Q104 320 100 270 Q86 262 72 262 Z"/>
+          <path class="muscle" data-group="quads" d="M168 262 Q174 340 156 398 L138 400 Q136 320 140 270 Q154 262 168 262 Z"/>
+        </svg>
+
+        <!-- BACK -->
+        <svg class="body" id="svg-back" viewBox="0 0 240 560" xmlns="http://www.w3.org/2000/svg">
+          <g class="base">
+            <ellipse class="body-base" cx="120" cy="40" rx="23" ry="27"/>
+            <rect class="body-base" x="108" y="62" width="24" height="20" rx="8"/>
+            <path class="body-base" d="M70 95 Q120 80 170 95 L182 250 Q120 270 58 250 Z"/>
+            <path class="body-base" d="M62 100 Q40 150 46 250 L62 250 Q70 160 78 110 Z"/>
+            <path class="body-base" d="M178 100 Q200 150 194 250 L178 250 Q170 160 162 110 Z"/>
+            <ellipse class="body-base" cx="48" cy="262" rx="11" ry="14"/>
+            <ellipse class="body-base" cx="192" cy="262" rx="11" ry="14"/>
+            <path class="body-base" d="M64 250 Q120 268 176 250 L172 400 Q160 540 150 540 L138 410 Q120 420 102 410 L90 540 Q80 540 68 400 Z"/>
+            <ellipse class="body-base" cx="80" cy="548" rx="14" ry="8"/>
+            <ellipse class="body-base" cx="160" cy="548" rx="14" ry="8"/>
+          </g>
+
+          <!-- traps -->
+          <path class="muscle" data-group="traps" d="M96 86 Q120 78 144 86 Q138 110 120 112 Q102 110 96 86 Z"/>
+          <!-- rear delts -->
+          <ellipse class="muscle" data-group="shoulders" cx="72" cy="106" rx="16" ry="14"/>
+          <ellipse class="muscle" data-group="shoulders" cx="168" cy="106" rx="16" ry="14"/>
+          <!-- back / lats -->
+          <path class="muscle" data-group="back" d="M90 116 Q120 124 150 116 L168 200 Q120 220 72 200 Z"/>
+          <!-- triceps -->
+          <path class="muscle" data-group="triceps" d="M64 130 Q54 170 56 200 L72 200 Q74 165 78 135 Z"/>
+          <path class="muscle" data-group="triceps" d="M176 130 Q186 170 184 200 L168 200 Q166 165 162 135 Z"/>
+          <!-- forearms -->
+          <path class="muscle" data-group="forearms" d="M56 205 Q50 235 50 252 L64 252 Q68 230 70 207 Z"/>
+          <path class="muscle" data-group="forearms" d="M184 205 Q190 235 190 252 L176 252 Q172 230 170 207 Z"/>
+          <!-- lower back -->
+          <rect class="muscle" data-group="lowerback" x="102" y="206" width="36" height="42" rx="10"/>
+          <!-- glutes -->
+          <path class="muscle" data-group="glutes" d="M74 256 Q120 248 166 256 Q170 300 138 304 Q120 296 102 304 Q70 300 74 256 Z"/>
+          <!-- hamstrings -->
+          <path class="muscle" data-group="hamstrings" d="M76 308 Q70 360 86 398 L102 400 Q104 350 100 312 Q88 306 76 308 Z"/>
+          <path class="muscle" data-group="hamstrings" d="M164 308 Q170 360 154 398 L138 400 Q136 350 140 312 Q152 306 164 308 Z"/>
+          <!-- calves -->
+          <path class="muscle" data-group="calves" d="M82 410 Q78 460 88 510 L98 510 Q100 460 98 414 Q90 408 82 410 Z"/>
+          <path class="muscle" data-group="calves" d="M158 410 Q162 460 152 510 L142 510 Q140 460 142 414 Q150 408 158 410 Z"/>
+        </svg>
+      </div>
+      <p class="hint">Front / back views &bull; tap any highlighted area</p>
+
+      <div class="chips" id="chips"></div>
+    </div>
+
+    <!-- RIGHT: results -->
+    <div class="panel" id="results">
+      <div class="placeholder">
+        <div class="big">💪</div>
+        <div>Pick a muscle group to get started.</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Built for the gym. Always warm up first &amp; start light. Tap “Watch demo” for proper form.
+  </footer>
+
+<script>
+  // ---- Exercise data ----
+  // Each group: title, subtitle, and a list of beginner-friendly exercises.
+  const DATA = {
+    chest: {
+      title: "Chest", sub: "Pectorals — pushing movements",
+      ex: [
+        { name: "Push-up", desc: "Bodyweight, no equipment needed.", level: "Beginner" },
+        { name: "Dumbbell Bench Press", desc: "Lie on a flat bench, press dumbbells up.", level: "Beginner" },
+        { name: "Incline Dumbbell Press", desc: "Hits the upper chest.", level: "Beginner" },
+        { name: "Chest Press Machine", desc: "Guided path, great for learning.", level: "Beginner" },
+        { name: "Cable Chest Fly", desc: "Squeeze across the chest.", level: "Intermediate" },
+      ],
+    },
+    shoulders: {
+      title: "Shoulders", sub: "Deltoids — overhead & raising movements",
+      ex: [
+        { name: "Dumbbell Shoulder Press", desc: "Press dumbbells overhead, seated or standing.", level: "Beginner" },
+        { name: "Lateral Raise", desc: "Raise light dumbbells out to the sides.", level: "Beginner" },
+        { name: "Front Raise", desc: "Raise dumbbells straight in front.", level: "Beginner" },
+        { name: "Face Pull", desc: "Cable pull to the face for rear delts.", level: "Intermediate" },
+        { name: "Arnold Press", desc: "Rotating overhead press.", level: "Intermediate" },
+      ],
+    },
+    biceps: {
+      title: "Biceps", sub: "Front of the upper arm — curling movements",
+      ex: [
+        { name: "Dumbbell Bicep Curl", desc: "The classic curl, one or both arms.", level: "Beginner" },
+        { name: "Hammer Curl", desc: "Neutral grip, also hits the forearm.", level: "Beginner" },
+        { name: "Cable Curl", desc: "Constant tension through the curl.", level: "Beginner" },
+        { name: "Barbell Curl", desc: "Both arms together with a barbell.", level: "Intermediate" },
+      ],
+    },
+    triceps: {
+      title: "Triceps", sub: "Back of the upper arm — pushing/extension",
+      ex: [
+        { name: "Tricep Pushdown", desc: "Cable pushdown, easy to learn.", level: "Beginner" },
+        { name: "Overhead Tricep Extension", desc: "Single dumbbell behind the head.", level: "Beginner" },
+        { name: "Bench Dips", desc: "Bodyweight dips off a bench.", level: "Beginner" },
+        { name: "Close-Grip Push-up", desc: "Hands close together.", level: "Beginner" },
+      ],
+    },
+    back: {
+      title: "Back / Lats", sub: "Upper back & lats — pulling movements",
+      ex: [
+        { name: "Lat Pulldown", desc: "Pull the bar to your chest, seated.", level: "Beginner" },
+        { name: "Seated Cable Row", desc: "Row the handle to your stomach.", level: "Beginner" },
+        { name: "Bent-Over Dumbbell Row", desc: "Hinge and row dumbbells up.", level: "Beginner" },
+        { name: "Single-Arm Dumbbell Row", desc: "One knee on a bench, row.", level: "Beginner" },
+        { name: "Assisted Pull-up", desc: "Machine-assisted pull-ups.", level: "Intermediate" },
+      ],
+    },
+    traps: {
+      title: "Traps", sub: "Upper back / neck — shrugging movements",
+      ex: [
+        { name: "Dumbbell Shrug", desc: "Shrug shoulders straight up.", level: "Beginner" },
+        { name: "Barbell Shrug", desc: "Heavier shrug variation.", level: "Intermediate" },
+        { name: "Face Pull", desc: "Also works upper traps and rear delts.", level: "Intermediate" },
+        { name: "Farmer's Carry", desc: "Walk holding heavy dumbbells.", level: "Beginner" },
+      ],
+    },
+    lowerback: {
+      title: "Lower Back", sub: "Spinal erectors — hinge & extension (go light!)",
+      ex: [
+        { name: "Back Extension", desc: "On a hyperextension bench.", level: "Beginner" },
+        { name: "Bird Dog", desc: "Bodyweight core/back stability.", level: "Beginner" },
+        { name: "Superman", desc: "Lie face down, lift arms and legs.", level: "Beginner" },
+        { name: "Romanian Deadlift", desc: "Hip hinge — focus on form.", level: "Intermediate" },
+      ],
+    },
+    core: {
+      title: "Abs / Core", sub: "Midsection — stability & flexion",
+      ex: [
+        { name: "Plank", desc: "Hold a straight-body position.", level: "Beginner" },
+        { name: "Crunch", desc: "Curl your shoulders off the floor.", level: "Beginner" },
+        { name: "Bicycle Crunch", desc: "Alternating elbow-to-knee.", level: "Beginner" },
+        { name: "Leg Raise", desc: "Lift straight legs while lying down.", level: "Beginner" },
+        { name: "Russian Twist", desc: "Rotate side to side, seated.", level: "Intermediate" },
+      ],
+    },
+    quads: {
+      title: "Quads", sub: "Front of thigh — squatting movements",
+      ex: [
+        { name: "Goblet Squat", desc: "Hold one dumbbell at your chest.", level: "Beginner" },
+        { name: "Leg Press", desc: "Machine press, easy to scale.", level: "Beginner" },
+        { name: "Leg Extension", desc: "Machine isolation for the quads.", level: "Beginner" },
+        { name: "Bodyweight Squat", desc: "Master form before adding weight.", level: "Beginner" },
+        { name: "Walking Lunge", desc: "Step forward, alternate legs.", level: "Intermediate" },
+      ],
+    },
+    hamstrings: {
+      title: "Hamstrings", sub: "Back of thigh — hinge & curling movements",
+      ex: [
+        { name: "Seated Leg Curl", desc: "Machine curl for the hamstrings.", level: "Beginner" },
+        { name: "Romanian Deadlift", desc: "Hip hinge with dumbbells/barbell.", level: "Beginner" },
+        { name: "Glute-Ham Bridge", desc: "Bridge with heels pulling in.", level: "Beginner" },
+        { name: "Good Morning", desc: "Light barbell hip hinge.", level: "Intermediate" },
+      ],
+    },
+    glutes: {
+      title: "Glutes", sub: "Butt — hip extension movements",
+      ex: [
+        { name: "Glute Bridge", desc: "Bodyweight hip lift on the floor.", level: "Beginner" },
+        { name: "Hip Thrust", desc: "Shoulders on bench, drive hips up.", level: "Beginner" },
+        { name: "Bulgarian Split Squat", desc: "Rear foot elevated, single leg.", level: "Intermediate" },
+        { name: "Cable Kickback", desc: "Kick one leg back against a cable.", level: "Beginner" },
+        { name: "Goblet Squat", desc: "Also builds the glutes.", level: "Beginner" },
+      ],
+    },
+    calves: {
+      title: "Calves", sub: "Lower leg — ankle raising movements",
+      ex: [
+        { name: "Standing Calf Raise", desc: "Rise onto your toes, slow control.", level: "Beginner" },
+        { name: "Seated Calf Raise", desc: "Machine raise, knees bent.", level: "Beginner" },
+        { name: "Leg Press Calf Raise", desc: "Push through the balls of your feet.", level: "Beginner" },
+      ],
+    },
+    forearms: {
+      title: "Forearms", sub: "Grip & wrist movements",
+      ex: [
+        { name: "Wrist Curl", desc: "Curl the wrists with light dumbbells.", level: "Beginner" },
+        { name: "Reverse Curl", desc: "Curl with palms facing down.", level: "Beginner" },
+        { name: "Farmer's Carry", desc: "Walk holding heavy dumbbells.", level: "Beginner" },
+      ],
+    },
+  };
+
+  const YT = "https://www.youtube.com/results?search_query=";
+
+  function show(group) {
+    const d = DATA[group];
+    if (!d) return;
+
+    // highlight selection across both svgs
+    document.querySelectorAll('.muscle').forEach(m => {
+      m.classList.toggle('selected', m.dataset.group === group);
+    });
+    // highlight matching chip
+    document.querySelectorAll('#chips button').forEach(b => {
+      b.classList.toggle('on', b.dataset.group === group);
+    });
+
+    const items = d.ex.map(e => {
+      const q = encodeURIComponent(e.name + " proper form tutorial");
+      return `
+        <div class="ex">
+          <div class="info">
+            <div class="name">${e.name}</div>
+            <div class="desc">${e.desc}</div>
+            <span class="badge">${e.level}</span>
+          </div>
+          <a class="watch" href="${YT}${q}" target="_blank" rel="noopener">▶ Watch</a>
+        </div>`;
+    }).join("");
+
+    document.getElementById('results').innerHTML = `
+      <div class="group-head"><span class="dot"></span><h2>${d.title}</h2></div>
+      <p class="group-sub">${d.sub}</p>
+      ${items}`;
+
+    if (window.innerWidth <= 760) {
+      document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  function setView(v) {
+    const front = v === 'front';
+    document.getElementById('svg-front').classList.toggle('on', front);
+    document.getElementById('svg-back').classList.toggle('on', !front);
+    document.getElementById('btn-front').classList.toggle('on', front);
+    document.getElementById('btn-back').classList.toggle('on', !front);
+  }
+
+  document.querySelectorAll('.muscle').forEach(m => {
+    m.addEventListener('click', () => show(m.dataset.group));
+  });
+
+  // Build quick-pick chips from the data, in a sensible order.
+  const CHIP_ORDER = ["chest","back","shoulders","biceps","triceps","forearms",
+                      "core","lowerback","traps","glutes","quads","hamstrings","calves"];
+  const chips = document.getElementById('chips');
+  CHIP_ORDER.forEach(g => {
+    const b = document.createElement('button');
+    b.dataset.group = g;
+    b.textContent = DATA[g].title;
+    b.addEventListener('click', () => show(g));
+    chips.appendChild(b);
+  });
+</script>
+</body>
+</html>
