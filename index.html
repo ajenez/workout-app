@@ -60,7 +60,11 @@
   }
 
   @media (max-width: 760px) {
-    .wrap { grid-template-columns: 1fr; }
+    .wrap { grid-template-columns: 1fr; gap: 14px; padding: 12px; }
+    header { padding: 18px 16px 6px; }
+    /* Cap the figure height so the quick-pick chips and results stay within
+       reach on a phone instead of being a full screen-scroll below the figure. */
+    svg.body.on { height: 46vh; width: auto; max-width: 100%; margin: 0 auto; }
   }
 
   .panel {
@@ -114,6 +118,23 @@
     fill: #2a3441;
     stroke: #0f1419;
     stroke-width: 1.2;
+    stroke-linejoin: round;
+  }
+  .muscle { stroke-linejoin: round; }
+  /* thin separation lines (pec split, ab grid, spine) for a more anatomical look */
+  .detail {
+    fill: none;
+    stroke: #0f1419;
+    stroke-width: 1.3;
+    stroke-linecap: round;
+    opacity: 0.4;
+    pointer-events: none;
+  }
+  .hair {
+    fill: #232d39;
+    stroke: #0f1419;
+    stroke-width: 1.2;
+    stroke-linejoin: round;
   }
 
   .hint {
@@ -179,12 +200,12 @@
     margin: 0 0 14px;
   }
 
+  .ex-wrap { margin-bottom: 10px; }
   .ex {
     background: var(--card);
     border: 1px solid #2a3543;
     border-radius: 12px;
     padding: 12px 14px;
-    margin-bottom: 10px;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -205,21 +226,44 @@
     padding: 2px 8px;
     margin-top: 6px;
   }
-  .ex a.watch {
+  .ex .watch {
     flex: none;
-    text-decoration: none;
+    font-family: inherit;
+    border: none;
+    cursor: pointer;
     background: var(--accent);
     color: #fff;
     font-weight: 600;
     font-size: 0.8rem;
-    padding: 9px 12px;
+    padding: 9px 14px;
     border-radius: 10px;
     display: flex;
     align-items: center;
     gap: 6px;
     white-space: nowrap;
   }
-  .ex a.watch:active { transform: scale(0.96); }
+  .ex .watch:active { transform: scale(0.96); }
+  .ex .watch.on { background: var(--card-hover); color: var(--text); }
+
+  /* inline video embed (expands under the exercise on tap) */
+  .player { display: none; margin-top: 8px; }
+  .player.open { display: block; }
+  .player iframe {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border: 0;
+    border-radius: 12px;
+    display: block;
+    background: #000;
+  }
+  .player .fallback {
+    display: inline-block;
+    margin-top: 6px;
+    font-size: 0.74rem;
+    color: var(--text-dim);
+    text-decoration: none;
+  }
+  .player .fallback:hover { color: var(--text); }
 
   footer {
     text-align: center;
@@ -246,81 +290,99 @@
       <div class="figure-stage">
         <!-- FRONT -->
         <svg class="body on" id="svg-front" viewBox="0 0 240 560" xmlns="http://www.w3.org/2000/svg">
-          <!-- base body silhouette -->
+          <!-- base body silhouette (female) -->
           <g class="base">
-            <ellipse class="body-base" cx="120" cy="40" rx="23" ry="27"/>
-            <rect class="body-base" x="108" y="62" width="24" height="20" rx="8"/>
-            <path class="body-base" d="M70 95 Q120 80 170 95 L182 250 Q120 270 58 250 Z"/>
-            <!-- arms base -->
-            <path class="body-base" d="M62 100 Q40 150 46 250 L62 250 Q70 160 78 110 Z"/>
-            <path class="body-base" d="M178 100 Q200 150 194 250 L178 250 Q170 160 162 110 Z"/>
-            <!-- hands -->
-            <ellipse class="body-base" cx="48" cy="262" rx="11" ry="14"/>
-            <ellipse class="body-base" cx="192" cy="262" rx="11" ry="14"/>
-            <!-- legs base -->
-            <path class="body-base" d="M64 250 Q120 268 176 250 L172 400 Q160 540 150 540 L138 410 Q120 420 102 410 L90 540 Q80 540 68 400 Z"/>
+            <!-- hair -->
+            <path class="hair" d="M120,16 C98,16 80,34 80,62 C80,80 82,92 88,102 C92,98 94,84 94,64 C100,58 110,56 120,56 C130,56 140,58 146,64 C146,84 148,98 152,102 C158,92 160,80 160,62 C160,34 142,16 120,16 Z"/>
+            <!-- head -->
+            <ellipse class="body-base" cx="120" cy="46" rx="17" ry="22"/>
+            <!-- neck -->
+            <path class="body-base" d="M110,64 L130,64 L132,90 L108,90 Z"/>
+            <!-- torso (fuller, average build) -->
+            <path class="body-base" d="M108,90 C92,92 80,98 74,110 C70,130 72,148 80,164 C86,182 90,196 96,206 C99,212 100,214 98,222 C96,238 90,250 84,264 C80,274 80,284 90,290 C104,296 136,296 150,290 C160,284 160,274 156,264 C150,250 144,238 142,222 C140,214 141,212 144,206 C150,196 154,182 160,164 C168,148 170,130 166,110 C160,98 148,92 132,90 Z"/>
+            <!-- arms -->
+            <path class="body-base" d="M76,110 C62,116 54,150 52,198 C50,234 48,264 50,290 C50,304 58,310 64,310 C70,310 73,302 73,290 C75,250 78,220 82,196 C86,158 88,128 90,116 Z"/>
+            <path class="body-base" d="M164,110 C178,116 186,150 188,198 C190,234 192,264 190,290 C190,304 182,310 176,310 C170,310 167,302 167,290 C165,250 162,220 158,196 C154,158 152,128 150,116 Z"/>
+            <!-- legs -->
+            <path class="body-base" d="M84,268 C78,274 76,286 78,302 C80,344 82,382 90,412 C90,440 92,474 96,512 C97,524 107,524 108,512 C112,472 112,442 112,412 C114,382 116,332 118,300 C119,290 120,286 120,282 C120,286 121,290 122,300 C124,332 126,382 128,412 C128,442 128,474 132,512 C133,524 141,524 142,512 C146,474 148,442 148,412 C154,382 156,340 158,300 C160,286 158,276 152,272 Z"/>
             <!-- feet -->
-            <ellipse class="body-base" cx="80" cy="548" rx="14" ry="8"/>
-            <ellipse class="body-base" cx="160" cy="548" rx="14" ry="8"/>
+            <ellipse class="body-base" cx="103" cy="522" rx="12" ry="7"/>
+            <ellipse class="body-base" cx="137" cy="522" rx="12" ry="7"/>
           </g>
 
           <!-- shoulders / delts -->
-          <ellipse class="muscle" data-group="shoulders" cx="72" cy="106" rx="16" ry="14"/>
-          <ellipse class="muscle" data-group="shoulders" cx="168" cy="106" rx="16" ry="14"/>
-          <!-- chest -->
-          <path class="muscle" data-group="chest" d="M118 100 Q90 96 76 112 Q74 140 100 148 Q118 150 118 130 Z"/>
-          <path class="muscle" data-group="chest" d="M122 100 Q150 96 164 112 Q166 140 140 148 Q122 150 122 130 Z"/>
+          <path class="muscle" data-group="shoulders" d="M76,110 C64,112 58,130 62,150 C76,154 88,146 92,124 C90,114 84,110 76,110 Z"/>
+          <path class="muscle" data-group="shoulders" d="M164,110 C176,112 182,130 178,150 C164,154 152,146 148,124 C150,114 156,110 164,110 Z"/>
+          <!-- chest / pecs -->
+          <path class="muscle" data-group="chest" d="M118,118 C102,114 86,118 82,132 C80,148 92,158 110,158 C118,156 119,142 118,130 Z"/>
+          <path class="muscle" data-group="chest" d="M122,118 C138,114 154,118 158,132 C160,148 148,158 130,158 C122,156 121,142 122,130 Z"/>
           <!-- biceps -->
-          <path class="muscle" data-group="biceps" d="M64 130 Q54 170 56 200 L72 200 Q74 165 78 135 Z"/>
-          <path class="muscle" data-group="biceps" d="M176 130 Q186 170 184 200 L168 200 Q166 165 162 135 Z"/>
+          <path class="muscle" data-group="biceps" d="M72,150 C62,168 62,194 70,206 C80,206 86,194 86,174 C86,160 80,150 72,150 Z"/>
+          <path class="muscle" data-group="biceps" d="M168,150 C178,168 178,194 170,206 C160,206 154,194 154,174 C154,160 160,150 168,150 Z"/>
           <!-- forearms -->
-          <path class="muscle" data-group="forearms" d="M56 205 Q50 235 50 252 L64 252 Q68 230 70 207 Z"/>
-          <path class="muscle" data-group="forearms" d="M184 205 Q190 235 190 252 L176 252 Q172 230 170 207 Z"/>
+          <path class="muscle" data-group="forearms" d="M66,212 C56,236 54,266 60,292 C70,294 78,286 78,266 C78,242 74,224 74,214 Z"/>
+          <path class="muscle" data-group="forearms" d="M174,212 C184,236 186,266 180,292 C170,294 162,286 162,266 C162,242 166,224 166,214 Z"/>
           <!-- abs / core -->
-          <rect class="muscle" data-group="core" x="102" y="152" width="36" height="92" rx="12"/>
+          <path class="muscle" data-group="core" d="M102,158 C96,176 96,198 102,212 C104,224 100,238 108,250 C116,256 124,256 132,250 C140,238 136,224 138,212 C144,198 144,176 138,158 C128,154 112,154 102,158 Z"/>
           <!-- quads -->
-          <path class="muscle" data-group="quads" d="M72 262 Q66 340 84 398 L102 400 Q104 320 100 270 Q86 262 72 262 Z"/>
-          <path class="muscle" data-group="quads" d="M168 262 Q174 340 156 398 L138 400 Q136 320 140 270 Q154 262 168 262 Z"/>
+          <path class="muscle" data-group="quads" d="M84,300 C74,340 80,382 92,406 C100,408 106,404 106,360 C106,330 104,304 100,290 C96,286 92,286 88,290 Z"/>
+          <path class="muscle" data-group="quads" d="M156,302 C166,340 160,382 148,406 C140,408 134,404 134,360 C134,332 138,310 142,300 C146,296 150,296 154,300 Z"/>
+          <!-- separation detail -->
+          <path class="detail" d="M120,118 L120,158"/>
+          <path class="detail" d="M88,150 C100,168 113,170 120,165"/>
+          <path class="detail" d="M152,150 C140,168 127,170 120,165"/>
+          <path class="detail" d="M120,160 L120,248"/>
+          <path class="detail" d="M108,182 L132,182 M108,202 L132,202 M108,222 L132,222"/>
         </svg>
 
         <!-- BACK -->
         <svg class="body" id="svg-back" viewBox="0 0 240 560" xmlns="http://www.w3.org/2000/svg">
           <g class="base">
-            <ellipse class="body-base" cx="120" cy="40" rx="23" ry="27"/>
-            <rect class="body-base" x="108" y="62" width="24" height="20" rx="8"/>
-            <path class="body-base" d="M70 95 Q120 80 170 95 L182 250 Q120 270 58 250 Z"/>
-            <path class="body-base" d="M62 100 Q40 150 46 250 L62 250 Q70 160 78 110 Z"/>
-            <path class="body-base" d="M178 100 Q200 150 194 250 L178 250 Q170 160 162 110 Z"/>
-            <ellipse class="body-base" cx="48" cy="262" rx="11" ry="14"/>
-            <ellipse class="body-base" cx="192" cy="262" rx="11" ry="14"/>
-            <path class="body-base" d="M64 250 Q120 268 176 250 L172 400 Q160 540 150 540 L138 410 Q120 420 102 410 L90 540 Q80 540 68 400 Z"/>
-            <ellipse class="body-base" cx="80" cy="548" rx="14" ry="8"/>
-            <ellipse class="body-base" cx="160" cy="548" rx="14" ry="8"/>
+            <!-- hair -->
+            <path class="hair" d="M120,16 C98,16 80,34 80,62 C80,80 82,92 88,102 C92,98 94,84 94,64 C100,58 110,56 120,56 C130,56 140,58 146,64 C146,84 148,98 152,102 C158,92 160,80 160,62 C160,34 142,16 120,16 Z"/>
+            <!-- head -->
+            <ellipse class="body-base" cx="120" cy="46" rx="17" ry="22"/>
+            <!-- neck -->
+            <path class="body-base" d="M110,64 L130,64 L132,90 L108,90 Z"/>
+            <!-- torso (fuller, average build) -->
+            <path class="body-base" d="M108,90 C92,92 80,98 74,110 C70,130 72,148 80,164 C86,182 90,196 96,206 C99,212 100,214 98,222 C96,238 90,250 84,264 C80,274 80,284 90,290 C104,296 136,296 150,290 C160,284 160,274 156,264 C150,250 144,238 142,222 C140,214 141,212 144,206 C150,196 154,182 160,164 C168,148 170,130 166,110 C160,98 148,92 132,90 Z"/>
+            <!-- arms -->
+            <path class="body-base" d="M76,110 C62,116 54,150 52,198 C50,234 48,264 50,290 C50,304 58,310 64,310 C70,310 73,302 73,290 C75,250 78,220 82,196 C86,158 88,128 90,116 Z"/>
+            <path class="body-base" d="M164,110 C178,116 186,150 188,198 C190,234 192,264 190,290 C190,304 182,310 176,310 C170,310 167,302 167,290 C165,250 162,220 158,196 C154,158 152,128 150,116 Z"/>
+            <!-- legs -->
+            <path class="body-base" d="M84,268 C78,274 76,286 78,302 C80,344 82,382 90,412 C90,440 92,474 96,512 C97,524 107,524 108,512 C112,472 112,442 112,412 C114,382 116,332 118,300 C119,290 120,286 120,282 C120,286 121,290 122,300 C124,332 126,382 128,412 C128,442 128,474 132,512 C133,524 141,524 142,512 C146,474 148,442 148,412 C154,382 156,340 158,300 C160,286 158,276 152,272 Z"/>
+            <!-- feet -->
+            <ellipse class="body-base" cx="103" cy="522" rx="12" ry="7"/>
+            <ellipse class="body-base" cx="137" cy="522" rx="12" ry="7"/>
           </g>
 
           <!-- traps -->
-          <path class="muscle" data-group="traps" d="M96 86 Q120 78 144 86 Q138 110 120 112 Q102 110 96 86 Z"/>
+          <path class="muscle" data-group="traps" d="M120,92 C100,94 84,104 76,116 C96,128 104,150 120,168 C136,150 144,128 164,116 C156,104 140,94 120,92 Z"/>
           <!-- rear delts -->
-          <ellipse class="muscle" data-group="shoulders" cx="72" cy="106" rx="16" ry="14"/>
-          <ellipse class="muscle" data-group="shoulders" cx="168" cy="106" rx="16" ry="14"/>
+          <path class="muscle" data-group="shoulders" d="M76,110 C64,112 58,130 62,150 C76,154 88,146 92,124 C90,114 84,110 76,110 Z"/>
+          <path class="muscle" data-group="shoulders" d="M164,110 C176,112 182,130 178,150 C164,154 152,146 148,124 C150,114 156,110 164,110 Z"/>
           <!-- back / lats -->
-          <path class="muscle" data-group="back" d="M90 116 Q120 124 150 116 L168 200 Q120 220 72 200 Z"/>
+          <path class="muscle" data-group="back" d="M88,120 C76,148 76,184 96,212 C106,216 114,210 114,194 C112,162 106,140 104,124 Z"/>
+          <path class="muscle" data-group="back" d="M152,120 C164,148 164,184 144,212 C134,216 126,210 126,194 C128,162 134,140 136,124 Z"/>
           <!-- triceps -->
-          <path class="muscle" data-group="triceps" d="M64 130 Q54 170 56 200 L72 200 Q74 165 78 135 Z"/>
-          <path class="muscle" data-group="triceps" d="M176 130 Q186 170 184 200 L168 200 Q166 165 162 135 Z"/>
+          <path class="muscle" data-group="triceps" d="M72,150 C62,168 62,194 70,206 C80,206 86,194 86,174 C86,160 80,150 72,150 Z"/>
+          <path class="muscle" data-group="triceps" d="M168,150 C178,168 178,194 170,206 C160,206 154,194 154,174 C154,160 160,150 168,150 Z"/>
           <!-- forearms -->
-          <path class="muscle" data-group="forearms" d="M56 205 Q50 235 50 252 L64 252 Q68 230 70 207 Z"/>
-          <path class="muscle" data-group="forearms" d="M184 205 Q190 235 190 252 L176 252 Q172 230 170 207 Z"/>
+          <path class="muscle" data-group="forearms" d="M66,212 C56,236 54,266 60,292 C70,294 78,286 78,266 C78,242 74,224 74,214 Z"/>
+          <path class="muscle" data-group="forearms" d="M174,212 C184,236 186,266 180,292 C170,294 162,286 162,266 C162,242 166,224 166,214 Z"/>
           <!-- lower back -->
-          <rect class="muscle" data-group="lowerback" x="102" y="206" width="36" height="42" rx="10"/>
+          <path class="muscle" data-group="lowerback" d="M104,214 C102,228 102,244 108,256 C116,262 124,262 132,256 C138,244 138,228 136,214 C126,210 114,210 104,214 Z"/>
           <!-- glutes -->
-          <path class="muscle" data-group="glutes" d="M74 256 Q120 248 166 256 Q170 300 138 304 Q120 296 102 304 Q70 300 74 256 Z"/>
+          <path class="muscle" data-group="glutes" d="M96,256 C88,258 86,278 88,302 C94,318 106,322 115,310 C119,300 119,278 115,264 C111,258 102,256 96,256 Z"/>
+          <path class="muscle" data-group="glutes" d="M144,256 C152,258 154,278 152,302 C146,318 134,322 125,310 C121,300 121,278 125,264 C129,258 138,256 144,256 Z"/>
           <!-- hamstrings -->
-          <path class="muscle" data-group="hamstrings" d="M76 308 Q70 360 86 398 L102 400 Q104 350 100 312 Q88 306 76 308 Z"/>
-          <path class="muscle" data-group="hamstrings" d="M164 308 Q170 360 154 398 L138 400 Q136 350 140 312 Q152 306 164 308 Z"/>
+          <path class="muscle" data-group="hamstrings" d="M86,314 C80,352 84,386 92,408 C100,410 106,406 106,372 C106,348 104,326 100,316 C96,312 92,312 88,316 Z"/>
+          <path class="muscle" data-group="hamstrings" d="M154,314 C160,352 156,386 148,408 C140,410 134,406 134,372 C134,348 136,326 140,316 C144,312 148,312 152,316 Z"/>
           <!-- calves -->
-          <path class="muscle" data-group="calves" d="M82 410 Q78 460 88 510 L98 510 Q100 460 98 414 Q90 408 82 410 Z"/>
-          <path class="muscle" data-group="calves" d="M158 410 Q162 460 152 510 L142 510 Q140 460 142 414 Q150 408 158 410 Z"/>
+          <path class="muscle" data-group="calves" d="M90,418 C84,448 86,486 96,510 C99,516 105,514 106,504 C110,478 108,448 102,420 C98,416 92,416 90,418 Z"/>
+          <path class="muscle" data-group="calves" d="M150,418 C156,448 154,486 144,510 C141,516 135,514 134,504 C130,478 132,448 138,420 C142,416 148,416 150,418 Z"/>
+          <!-- spine detail -->
+          <path class="detail" d="M120,170 L120,254"/>
         </svg>
       </div>
       <p class="hint">Front / back views &bull; tap any highlighted area</p>
@@ -343,127 +405,127 @@
 
 <script>
   // ---- Exercise data ----
-  // Each group: title, subtitle, and a list of beginner-friendly exercises.
+   // Each group: title, subtitle, and a list of beginner-friendly exercises.
   const DATA = {
     chest: {
       title: "Chest", sub: "Pectorals — pushing movements",
       ex: [
-        { name: "Push-up", desc: "Bodyweight, no equipment needed.", level: "Beginner" },
-        { name: "Dumbbell Bench Press", desc: "Lie on a flat bench, press dumbbells up.", level: "Beginner" },
-        { name: "Incline Dumbbell Press", desc: "Hits the upper chest.", level: "Beginner" },
-        { name: "Chest Press Machine", desc: "Guided path, great for learning.", level: "Beginner" },
-        { name: "Cable Chest Fly", desc: "Squeeze across the chest.", level: "Intermediate" },
+        { name: "Push-up", desc: "Bodyweight, no equipment needed.", level: "Beginner", yt: "IODxDxX7oi4" },
+        { name: "Dumbbell Bench Press", desc: "Lie on a flat bench, press dumbbells up.", level: "Beginner", yt: "J-gWN5hYwRU" },
+        { name: "Incline Dumbbell Press", desc: "Hits the upper chest.", level: "Beginner", yt: "hChjZQhX1Ls" },
+        { name: "Chest Press Machine", desc: "Guided path, great for learning.", level: "Beginner", yt: "pLofEAcfsO8" },
+        { name: "Cable Chest Fly", desc: "Squeeze across the chest.", level: "Intermediate", yt: "8Um35Es-ROE" },
       ],
     },
     shoulders: {
       title: "Shoulders", sub: "Deltoids — overhead & raising movements",
       ex: [
-        { name: "Dumbbell Shoulder Press", desc: "Press dumbbells overhead, seated or standing.", level: "Beginner" },
-        { name: "Lateral Raise", desc: "Raise light dumbbells out to the sides.", level: "Beginner" },
-        { name: "Front Raise", desc: "Raise dumbbells straight in front.", level: "Beginner" },
-        { name: "Face Pull", desc: "Cable pull to the face for rear delts.", level: "Intermediate" },
-        { name: "Arnold Press", desc: "Rotating overhead press.", level: "Intermediate" },
+        { name: "Dumbbell Shoulder Press", desc: "Press dumbbells overhead, seated or standing.", level: "Beginner", yt: "qEwKCR5JCog" },
+        { name: "Lateral Raise", desc: "Raise light dumbbells out to the sides.", level: "Beginner", yt: "XNKqPCDtC1k" },
+        { name: "Front Raise", desc: "Raise dumbbells straight in front.", level: "Beginner", yt: "DzF4olZiSBQ" },
+        { name: "Face Pull", desc: "Cable pull to the face for rear delts.", level: "Intermediate", yt: "eTCBSFlCJ_s" },
+        { name: "Arnold Press", desc: "Rotating overhead press.", level: "Intermediate", yt: "6Z15_WdXmVw" },
       ],
     },
     biceps: {
       title: "Biceps", sub: "Front of the upper arm — curling movements",
       ex: [
-        { name: "Dumbbell Bicep Curl", desc: "The classic curl, one or both arms.", level: "Beginner" },
-        { name: "Hammer Curl", desc: "Neutral grip, also hits the forearm.", level: "Beginner" },
-        { name: "Cable Curl", desc: "Constant tension through the curl.", level: "Beginner" },
-        { name: "Barbell Curl", desc: "Both arms together with a barbell.", level: "Intermediate" },
+        { name: "Dumbbell Bicep Curl", desc: "The classic curl, one or both arms.", level: "Beginner", yt: "XE_pHwbst04" },
+        { name: "Hammer Curl", desc: "Neutral grip, also hits the forearm.", level: "Beginner", yt: "zC3nLlEvin4" },
+        { name: "Cable Curl", desc: "Constant tension through the curl.", level: "Beginner", yt: "FTnvwZwLHb4" },
+        { name: "Barbell Curl", desc: "Both arms together with a barbell.", level: "Intermediate", yt: "JJB8XgKltA8" },
       ],
     },
     triceps: {
       title: "Triceps", sub: "Back of the upper arm — pushing/extension",
       ex: [
-        { name: "Tricep Pushdown", desc: "Cable pushdown, easy to learn.", level: "Beginner" },
-        { name: "Overhead Tricep Extension", desc: "Single dumbbell behind the head.", level: "Beginner" },
-        { name: "Bench Dips", desc: "Bodyweight dips off a bench.", level: "Beginner" },
-        { name: "Close-Grip Push-up", desc: "Hands close together.", level: "Beginner" },
+        { name: "Tricep Pushdown", desc: "Cable pushdown, easy to learn.", level: "Beginner", yt: "_w-HpW70nSQ" },
+        { name: "Overhead Tricep Extension", desc: "Single dumbbell behind the head.", level: "Beginner", yt: "DZgpCf5alfI" },
+        { name: "Bench Dips", desc: "Bodyweight dips off a bench.", level: "Beginner", yt: "j_WpuVY3wbo" },
+        { name: "Close-Grip Push-up", desc: "Hands close together.", level: "Beginner", yt: "W3gBdsTzDrk" },
       ],
     },
     back: {
       title: "Back / Lats", sub: "Upper back & lats — pulling movements",
       ex: [
-        { name: "Lat Pulldown", desc: "Pull the bar to your chest, seated.", level: "Beginner" },
-        { name: "Seated Cable Row", desc: "Row the handle to your stomach.", level: "Beginner" },
-        { name: "Bent-Over Dumbbell Row", desc: "Hinge and row dumbbells up.", level: "Beginner" },
-        { name: "Single-Arm Dumbbell Row", desc: "One knee on a bench, row.", level: "Beginner" },
-        { name: "Assisted Pull-up", desc: "Machine-assisted pull-ups.", level: "Intermediate" },
+        { name: "Lat Pulldown", desc: "Pull the bar to your chest, seated.", level: "Beginner", yt: "CAwf7n6Luuc" },
+        { name: "Seated Cable Row", desc: "Row the handle to your stomach.", level: "Beginner", yt: "EU7bOadUsNI" },
+        { name: "Bent-Over Dumbbell Row", desc: "Hinge and row dumbbells up.", level: "Beginner", yt: "6TSP1TRMUzs" },
+        { name: "Single-Arm Dumbbell Row", desc: "One knee on a bench, row.", level: "Beginner", yt: "S_kOe9mOLlg" },
+        { name: "Assisted Pull-up", desc: "Machine-assisted pull-ups.", level: "Intermediate", yt: "fnHeovkmkkk" },
       ],
     },
     traps: {
       title: "Traps", sub: "Upper back / neck — shrugging movements",
       ex: [
-        { name: "Dumbbell Shrug", desc: "Shrug shoulders straight up.", level: "Beginner" },
-        { name: "Barbell Shrug", desc: "Heavier shrug variation.", level: "Intermediate" },
-        { name: "Face Pull", desc: "Also works upper traps and rear delts.", level: "Intermediate" },
-        { name: "Farmer's Carry", desc: "Walk holding heavy dumbbells.", level: "Beginner" },
+        { name: "Dumbbell Shrug", desc: "Shrug shoulders straight up.", level: "Beginner", yt: "cJRVVxmytaM" },
+        { name: "Barbell Shrug", desc: "Heavier shrug variation.", level: "Intermediate", yt: "KbsQ1E8Hg0o" },
+        { name: "Face Pull", desc: "Also works upper traps and rear delts.", level: "Intermediate", yt: "eTCBSFlCJ_s" },
+        { name: "Farmer's Carry", desc: "Walk holding heavy dumbbells.", level: "Beginner", yt: "lLAw6fUccKA" },
       ],
     },
     lowerback: {
       title: "Lower Back", sub: "Spinal erectors — hinge & extension (go light!)",
       ex: [
-        { name: "Back Extension", desc: "On a hyperextension bench.", level: "Beginner" },
-        { name: "Bird Dog", desc: "Bodyweight core/back stability.", level: "Beginner" },
-        { name: "Superman", desc: "Lie face down, lift arms and legs.", level: "Beginner" },
-        { name: "Romanian Deadlift", desc: "Hip hinge — focus on form.", level: "Intermediate" },
+        { name: "Back Extension", desc: "On a hyperextension bench.", level: "Beginner", yt: "gLT-WLH84B4" },
+        { name: "Bird Dog", desc: "Bodyweight core/back stability.", level: "Beginner", yt: "ZdAHe9_HeEw" },
+        { name: "Superman", desc: "Lie face down, lift arms and legs.", level: "Beginner", yt: "9EakJJhONb0" },
+        { name: "Romanian Deadlift", desc: "Hip hinge — focus on form.", level: "Intermediate", yt: "KN5vN3JskqI" },
       ],
     },
     core: {
       title: "Abs / Core", sub: "Midsection — stability & flexion",
       ex: [
-        { name: "Plank", desc: "Hold a straight-body position.", level: "Beginner" },
-        { name: "Crunch", desc: "Curl your shoulders off the floor.", level: "Beginner" },
-        { name: "Bicycle Crunch", desc: "Alternating elbow-to-knee.", level: "Beginner" },
-        { name: "Leg Raise", desc: "Lift straight legs while lying down.", level: "Beginner" },
-        { name: "Russian Twist", desc: "Rotate side to side, seated.", level: "Intermediate" },
+        { name: "Plank", desc: "Hold a straight-body position.", level: "Beginner", yt: "mwlp75MS6Rg" },
+        { name: "Crunch", desc: "Curl your shoulders off the floor.", level: "Beginner", yt: "tnZNcIqhGb0" },
+        { name: "Bicycle Crunch", desc: "Alternating elbow-to-knee.", level: "Beginner", yt: "1we3bh9uhqY" },
+        { name: "Leg Raise", desc: "Lift straight legs while lying down.", level: "Beginner", yt: "xJJu-WiROM8" },
+        { name: "Russian Twist", desc: "Rotate side to side, seated.", level: "Intermediate", yt: "IJDOoVyVjhc" },
       ],
     },
     quads: {
       title: "Quads", sub: "Front of thigh — squatting movements",
       ex: [
-        { name: "Goblet Squat", desc: "Hold one dumbbell at your chest.", level: "Beginner" },
-        { name: "Leg Press", desc: "Machine press, easy to scale.", level: "Beginner" },
-        { name: "Leg Extension", desc: "Machine isolation for the quads.", level: "Beginner" },
-        { name: "Bodyweight Squat", desc: "Master form before adding weight.", level: "Beginner" },
-        { name: "Walking Lunge", desc: "Step forward, alternate legs.", level: "Intermediate" },
+        { name: "Goblet Squat", desc: "Hold one dumbbell at your chest.", level: "Beginner", yt: "6mf0oa2GGUc" },
+        { name: "Leg Press", desc: "Machine press, easy to scale.", level: "Beginner", yt: "8nm863C0c60" },
+        { name: "Leg Extension", desc: "Machine isolation for the quads.", level: "Beginner", yt: "tTbJBUKnWU8" },
+        { name: "Bodyweight Squat", desc: "Master form before adding weight.", level: "Beginner", yt: "P-yaD24bUE8" },
+        { name: "Walking Lunge", desc: "Step forward, alternate legs.", level: "Intermediate", yt: "vYfp2t4XgqQ" },
       ],
     },
     hamstrings: {
       title: "Hamstrings", sub: "Back of thigh — hinge & curling movements",
       ex: [
-        { name: "Seated Leg Curl", desc: "Machine curl for the hamstrings.", level: "Beginner" },
-        { name: "Romanian Deadlift", desc: "Hip hinge with dumbbells/barbell.", level: "Beginner" },
-        { name: "Glute-Ham Bridge", desc: "Bridge with heels pulling in.", level: "Beginner" },
-        { name: "Good Morning", desc: "Light barbell hip hinge.", level: "Intermediate" },
+        { name: "Seated Leg Curl", desc: "Machine curl for the hamstrings.", level: "Beginner", yt: "14OrOWlM5QU" },
+        { name: "Romanian Deadlift", desc: "Hip hinge with dumbbells/barbell.", level: "Beginner", yt: "KN5vN3JskqI" },
+        { name: "Glute-Ham Bridge", desc: "Bridge with heels pulling in.", level: "Beginner", yt: "PMKya7l4kaI" },
+        { name: "Good Morning", desc: "Light barbell hip hinge.", level: "Intermediate", yt: "0Syp9iyINZ4" },
       ],
     },
     glutes: {
       title: "Glutes", sub: "Butt — hip extension movements",
       ex: [
-        { name: "Glute Bridge", desc: "Bodyweight hip lift on the floor.", level: "Beginner" },
-        { name: "Hip Thrust", desc: "Shoulders on bench, drive hips up.", level: "Beginner" },
-        { name: "Bulgarian Split Squat", desc: "Rear foot elevated, single leg.", level: "Intermediate" },
-        { name: "Cable Kickback", desc: "Kick one leg back against a cable.", level: "Beginner" },
-        { name: "Goblet Squat", desc: "Also builds the glutes.", level: "Beginner" },
+        { name: "Glute Bridge", desc: "Bodyweight hip lift on the floor.", level: "Beginner", yt: "L9KZfxT654Y" },
+        { name: "Hip Thrust", desc: "Shoulders on bench, drive hips up.", level: "Beginner", yt: "pF17m_CXfL0" },
+        { name: "Bulgarian Split Squat", desc: "Rear foot elevated, single leg.", level: "Intermediate", yt: "yewlXtRs3K4" },
+        { name: "Cable Kickback", desc: "Kick one leg back against a cable.", level: "Beginner", yt: "bVrmtCI00Ys" },
+        { name: "Goblet Squat", desc: "Also builds the glutes.", level: "Beginner", yt: "6mf0oa2GGUc" },
       ],
     },
     calves: {
       title: "Calves", sub: "Lower leg — ankle raising movements",
       ex: [
-        { name: "Standing Calf Raise", desc: "Rise onto your toes, slow control.", level: "Beginner" },
-        { name: "Seated Calf Raise", desc: "Machine raise, knees bent.", level: "Beginner" },
-        { name: "Leg Press Calf Raise", desc: "Push through the balls of your feet.", level: "Beginner" },
+        { name: "Standing Calf Raise", desc: "Rise onto your toes, slow control.", level: "Beginner", yt: "SorIB5_zO9A" },
+        { name: "Seated Calf Raise", desc: "Machine raise, knees bent.", level: "Beginner", yt: "ORY-ke6vcgk" },
+        { name: "Leg Press Calf Raise", desc: "Push through the balls of your feet.", level: "Beginner", yt: "8k435cj30gc" },
       ],
     },
     forearms: {
       title: "Forearms", sub: "Grip & wrist movements",
       ex: [
-        { name: "Wrist Curl", desc: "Curl the wrists with light dumbbells.", level: "Beginner" },
-        { name: "Reverse Curl", desc: "Curl with palms facing down.", level: "Beginner" },
-        { name: "Farmer's Carry", desc: "Walk holding heavy dumbbells.", level: "Beginner" },
+        { name: "Wrist Curl", desc: "Curl the wrists with light dumbbells.", level: "Beginner", yt: "SqwIBiru46w" },
+        { name: "Reverse Curl", desc: "Curl with palms facing down.", level: "Beginner", yt: "pXx38ZWRYjo" },
+        { name: "Farmer's Carry", desc: "Walk holding heavy dumbbells.", level: "Beginner", yt: "lLAw6fUccKA" },
       ],
     },
   };
@@ -486,13 +548,16 @@
     const items = d.ex.map(e => {
       const q = encodeURIComponent(e.name + " proper form tutorial");
       return `
-        <div class="ex">
-          <div class="info">
-            <div class="name">${e.name}</div>
-            <div class="desc">${e.desc}</div>
-            <span class="badge">${e.level}</span>
+        <div class="ex-wrap">
+          <div class="ex">
+            <div class="info">
+              <div class="name">${e.name}</div>
+              <div class="desc">${e.desc}</div>
+              <span class="badge">${e.level}</span>
+            </div>
+            <button class="watch" onclick="toggleVid(this)" data-yt="${e.yt}" data-q="${q}">▶ Watch</button>
           </div>
-          <a class="watch" href="${YT}${q}" target="_blank" rel="noopener">▶ Watch</a>
+          <div class="player"></div>
         </div>`;
     }).join("");
 
@@ -504,6 +569,25 @@
     if (window.innerWidth <= 760) {
       document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+  }
+
+  // Expand/collapse an inline YouTube player under an exercise (one open at a time).
+  function toggleVid(btn) {
+    const player = btn.closest('.ex-wrap').querySelector('.player');
+    const isOpen = player.classList.contains('open');
+    document.querySelectorAll('.player.open').forEach(p => { p.classList.remove('open'); p.innerHTML = ''; });
+    document.querySelectorAll('.watch.on').forEach(b => { b.classList.remove('on'); b.textContent = '▶ Watch'; });
+    if (isOpen) return; // tapping the open one just closes it
+    player.innerHTML =
+      `<iframe src="https://www.youtube-nocookie.com/embed/${btn.dataset.yt}?rel=0&autoplay=1&playsinline=1"`
+      + ` title="Exercise demo" loading="lazy"`
+      + ` allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"`
+      + ` allowfullscreen></iframe>`
+      + `<a class="fallback" href="${YT}${btn.dataset.q}" target="_blank" rel="noopener">Not the right video? Search YouTube ↗</a>`;
+    player.classList.add('open');
+    btn.classList.add('on');
+    btn.textContent = '✕ Close';
+    if (window.innerWidth <= 760) player.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
   function setView(v) {
