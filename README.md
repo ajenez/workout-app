@@ -1,34 +1,41 @@
 # Workout Finder
 
-A simple web app that helps a gym beginner figure out what to do: tap a muscle
-group on a diagram of the human body and get a list of beginner-friendly
-exercises that train it, each with an **embedded YouTube demo** of proper form
-that plays right in the page.
+A mobile-first web app that helps a gym beginner figure out what to do: pick a
+muscle group from a list and get beginner-friendly exercises that train it — each
+with **sets/reps/rest guidance**, **form cues**, **common mistakes to avoid**, and
+an **embedded YouTube demo** of proper form that plays right in the page.
 
-Built for the author's girlfriend, who recently started going to the gym and is
-sometimes unsure which exercises to do.
+Built for the author's girlfriend, who's a lifelong athlete (soccer — strong legs,
+strong core) but new to the gym, so she can feel confident choosing exercises.
 
 ---
 
-## Status: v2, working
+## Status: v3, working
 
 The whole app is a **single self-contained file: [`index.html`](index.html)**.
-No build step, no dependencies, no framework. Open it in any browser, or host it
-anywhere static.
+No build step, no dependencies, no framework, no backend. Open it in any browser,
+or host it anywhere static.
 
-Everything below has been built and verified working on desktop **and** mobile
-(front/back view switching, clicking muscle regions, the quick-pick chips, the
-exercise panel, and the inline video players).
+Everything below has been built and verified working (muscle picker, equipment
+filter, exercise cards with sets/reps/cues/mistakes, inline video players, saving
+to favorites, routines, and tips).
 
-### What changed since v1
-- **Embedded videos.** Tapping **▶ Watch** now expands a YouTube player inline
-  instead of opening a search page. Each exercise has a hand-picked video ID.
-  (See design decision #1 — this replaces the old "open a search query" behavior.)
-- **Female figure.** The body diagram was redrawn as an average-build female
-  figure (hourglass silhouette, hair, anatomically-placed muscle bellies with
-  separation detail lines), replacing the original stylized unisex dummy.
-- **Mobile-first sizing.** On phones the figure is height-capped so the figure
-  **and** all the quick-pick chips fit on one screen without scrolling.
+### What changed since v2
+- **Refactored from "tap a body diagram" into a 4-tab app.** The clickable SVG
+  body figure was **removed entirely** — the muscle picker is now a region-grouped
+  list of chips (Upper body / Core / Lower body), which is more reliable on a phone.
+- **Richer exercise cards.** Each exercise now shows **sets · reps · rest**, a
+  short list of **form cues**, **common mistakes**, the **gear** it needs, and the
+  **secondary muscles** it works — not just a name + description.
+- **Equipment filter.** Toggle which equipment is available (Bodyweight, Dumbbells,
+  Cables, Machines, Barbell) and the exercise list filters to match.
+- **Save / favorites.** A ♡ Save button on every exercise persists to
+  `localStorage` and shows up under the **Saved** tab. Degrades gracefully in
+  private/incognito mode (shows a heads-up banner instead of silently failing).
+- **Routines tab.** Three hand-curated starter programs (Full body 3×/week, Glute
+  focus, Upper/lower split). They reference exercises by key, so they stay in sync
+  with the exercise data automatically.
+- **Tips tab.** Short gym-confidence tips (etiquette, resting, starting light).
 
 ---
 
@@ -46,9 +53,8 @@ It's a static file, so any of these work:
   served at `https://<user>.github.io/<repo>/`.
 - Or drop it on Netlify / any static host.
 
-> `.claude/launch.json` is configured to serve the folder with
-> `python3 -m http.server 4173` for the Claude Code preview tool. Harmless to
-> keep or delete.
+> `.claude/launch.json` is configured to serve the folder for the Claude Code
+> preview tool. Harmless to keep or delete.
 
 > **Custom domain note:** an earlier attempt to point `www.hannahsworkout.com` at
 > GitHub Pages failed only because **the domain is not registered yet** (it has no
@@ -59,99 +65,117 @@ It's a static file, so any of these work:
 
 ## What it does (features)
 
-- **Body diagram** with a **Front / Back** toggle (two inline SVG figures, female
-  form). Major muscle regions are clickable and highlight when selected.
-- **Quick-pick chips**: a labeled button for every muscle group below the figure.
-  These exist because (a) tapping small SVG regions on a phone is fiddly and
-  (b) a beginner may not know where a given muscle is. The chips are the most
-  reliable way to navigate; the SVG is the nice-to-have visual.
-- **Exercise panel**: when a group is selected it shows that group's exercises,
-  each with a plain-English description, a **Beginner / Intermediate** badge, and
-  a **▶ Watch** button.
-- **Inline video**: **▶ Watch** expands a YouTube player directly under the
-  exercise (one open at a time; tap again or pick another to switch). Each player
-  also has a "Not the right video? Search YouTube ↗" fallback link.
-- **Mobile-first** dark UI (she uses it on her phone at the gym). On narrow
-  screens the figure is height-capped and results auto-scroll into view.
+The app is four tabs, switched from a fixed bottom nav bar:
 
-### Covered muscle groups (13)
-chest, back (lats), shoulders, biceps, triceps, forearms, core (abs),
-lower back, traps, glutes, quads, hamstrings, calves — 56 exercises total,
-weighted toward machines / dumbbells / bodyweight that are easy to learn.
+1. **Exercises** — the main screen.
+   - **Equipment filter** at the top: Bodyweight, Dumbbells, Cables, Machines,
+     Barbell. All on by default (built for a fully-equipped city gym). Toggling a
+     chip re-filters the currently-shown muscle group instantly.
+   - **Muscle picker** grouped by region — **Upper body** (chest, back, shoulders,
+     biceps, triceps, traps, forearms), **Core** (abs, lower back), **Lower body**
+     (glutes, quads, hamstrings, calves).
+   - Tapping a group renders its **exercise cards** below (filtered by equipment).
+2. **Routines** — three expandable starter programs. Each lists its exercises in
+   order with sets × reps and a quick ▶ video button.
+3. **Saved** — favorited exercises (full cards), persisted in `localStorage`.
+4. **Tips** — short gym-confidence tips.
+
+### Exercise card contents
+Each exercise shows: name, a **Beginner / Intermediate** badge, a one-line
+description, a **sets · reps · rest** row, **form cues**, **common mistakes**, a
+**gear** pill, a **secondary muscles** pill, a **▶ Watch demo** button (inline
+YouTube player) and a **♡ Save** button.
+
+### Covered muscle groups (13) / exercises (55)
+chest, back, shoulders, biceps, triceps, traps, forearms (upper); abs, lower back
+(core); glutes, quads, hamstrings, calves (lower). Weighted toward machines /
+dumbbells / cables / bodyweight that are easy to learn. (Lower-body selection
+leans a little more advanced — the user is a strong-legged ex-athlete.)
 
 ---
 
 ## Key design decisions (please preserve unless asked otherwise)
 
-1. **YouTube "Watch" buttons embed a curated, hard-coded video per exercise.**
+1. **Single self-contained HTML file**, no build tooling — chosen for trivial
+   sharing and GitHub Pages compatibility. Don't introduce a framework/build step
+   unless the user wants ongoing feature growth.
+2. **Muscle picker is a list of chips, not a body diagram.** The old SVG figure
+   was removed in v3; chips grouped by region are the navigation. Don't re-add an
+   SVG body unless asked.
+3. **YouTube "Watch" buttons embed a curated, hard-coded video per exercise.**
    Each exercise in `DATA` has a `yt` field holding an 11-character YouTube video
-   ID, rendered as a `youtube-nocookie.com/embed/<id>` iframe. The IDs were picked
-   as popular "proper form" tutorials and each was checked to be embeddable.
+   ID, rendered as a `youtube-nocookie.com/embed/<id>` iframe.
    - **Why curated and not the live YouTube API:** to keep the single-file,
-     zero-setup, zero-API-key design (chosen over a "fetch the highest-view video
-     live" approach that would need a Google API key exposed in the public file).
+     zero-setup, zero-API-key design (a "fetch the highest-view video live"
+     approach would need a Google API key exposed in the public file).
    - **Dead-link safety:** every player keeps a fallback link that opens a YouTube
-     **search** (`...youtube.com/results?search_query=...`), so if a hard-coded
-     video is ever removed the user can still find a replacement. The old v1
-     behavior was search-only links; that lives on as this fallback.
-2. **Major muscle groups only** (not individual muscles like medial vs lateral
-   head) — kept simple because the user is a beginner.
-3. **Single self-contained HTML file**, no build tooling — chosen for trivial
-   sharing and GitHub Pages compatibility. Don't introduce a framework/build
-   step unless the user wants ongoing feature growth.
-4. **Chips + SVG both drive the same `show(group)` function** and stay in sync
-   (selecting via either highlights both the chip and the muscle region).
-5. **Female, average-build figure** in a dark theme with tap-to-highlight (gray
-   muscle → red when selected). It deliberately is **not** a color-coded medical
-   chart; keep the interaction model unless asked otherwise.
+     **search**, so if a hard-coded video is ever removed the user can still find a
+     replacement.
+4. **Saving degrades gracefully.** `localStorage` is wrapped in try/catch; if it's
+   unavailable (private mode), the Saved tab shows a banner rather than failing
+   silently. Don't assume `localStorage` always works.
+5. **Routines reference exercises by key, never by duplicating content.** A routine
+   item is a `"group:key"` string looked up in the flat `ALL` map. Fix an exercise
+   once and it's fixed everywhere it appears.
+6. **Major muscle groups only** (not individual heads) — kept simple for a beginner.
+7. **Dark theme**, `--accent` is the red/coral brand color.
 
 ---
 
 ## Code map (all inside `index.html`)
 
-- **`<style>`** — all CSS. Theme variables are at the top under `:root`
-  (`--accent` is the red/coral brand color). Layout is a 2-column grid that
-  collapses to 1 column under 760px.
-  - `@media (max-width: 760px)` caps the figure with
-    `svg.body.on { height: 46vh; width: auto; }` so the chips stay on-screen.
-  - `.detail` = thin separation lines (pec split, ab grid, spine). `.hair` = the
-    hair shape. `.ex-wrap` / `.player` = the inline video container (`.player.open`
-    reveals it; the `iframe` is `aspect-ratio: 16/9`).
-- **Two `<svg>` figures** — `#svg-front` and `#svg-back`, `viewBox="0 0 300 560"`.
-  Clickable parts have `class="muscle"` and a `data-group="..."` attribute.
-  Non-interactive body outline parts use `class="body-base"` (or `class="hair"`).
-  Thin `class="detail"` paths add muscle separation lines. The SVGs are stylized
-  (hand-authored bezier paths, anatomically placed), not anatomically precise.
+- **`<style>`** — all CSS. Theme variables are at the top under `:root`.
+  Layout is mobile-first with a fixed bottom `.tabbar`. Key classes: `.view`
+  (one per tab, `.on` = visible), `.card` (an exercise card), `.srr` (the
+  sets/reps/rest row), `.cues` / `.mistakes` (the bullet lists), `.pill`
+  (gear / secondary-muscle chips), `.player` (`.player.open` reveals the inline
+  iframe), `.routine` / `.rrow` (routines), `.tip`, `.banner`.
 - **`<script>`**:
-  - **`DATA`** — the single source of truth for content. An object keyed by
-    group id; each entry has `title`, `sub` (subtitle), and `ex` (array of
-    `{ name, desc, level, yt }`, where `yt` is the YouTube video ID).
-    **Edit this object to add/remove/change exercises or swap a video.**
-  - **`show(group)`** — renders the exercise panel (each row wrapped in
-    `.ex-wrap` with a hidden `.player`), highlights the matching muscle region(s)
-    and chip.
-  - **`toggleVid(btn)`** — expands/collapses the inline player for a row, builds
-    the embed iframe + fallback link, and enforces "only one open at a time."
-  - **`YT`** — base search URL, now used only for the per-player fallback link.
-  - **`setView('front'|'back')`** — toggles which SVG and toggle button is active.
-  - **`CHIP_ORDER`** — array controlling the order chips appear; chips are built
-    from `DATA` at the bottom of the script.
+  - **`DATA`** — the single source of truth for content. An object keyed by group
+    id; each entry has a `title` and an `ex` array. Each exercise is:
+    ```js
+    { key, name, level, yt, equip:[...], gear, sets, reps, rest,
+      desc, cues:[...], mistakes:[...], secondary:[...] }
+    ```
+    - `key` is unique **within** its group; routines address exercises as
+      `"group:key"`.
+    - `equip` drives the equipment filter (subset of `EQUIP`).
+    - `yt` is a real, oEmbed-verified YouTube ID. **Edit this object to
+      add/remove/change exercises or swap a video.**
+  - **`REGIONS`** — controls how muscle groups are grouped/ordered in the picker.
+  - **`EQUIP`** — the five equipment filter options.
+  - **`ROUTINES`** — array of starter programs; each has `days[]`, each day a list
+    of `"group:key"` item strings.
+  - **`TIPS`** — array of gym-confidence tip strings.
+  - **`ALL`** — a flat map built at load time: `ALL["group:key"]` → the exercise
+    object (plus `group` / `groupTitle`). Used by routines, saving, and rendering.
+  - **`cardHTML(id)` / `rowHTML(id)`** — render a full exercise card / a compact
+    routine row from a `"group:key"` id.
+  - **`showGroup(group)`** — renders the filtered exercise list for a muscle group.
+  - **`toggleEquip(btn)`** — toggles an equipment filter and re-renders.
+  - **`toggleVid(btn)`** — expands/collapses the inline player (one open at a
+    time); works for both full cards and routine rows.
+  - **`toggleSave(btn)` / `renderSaved()` / `persistSaved()`** — favorites +
+    `localStorage` (with the private-mode fallback).
+  - **`renderRoutines()` / `toggleRoutine(i)`**, **`renderTips()`** — routines/tips.
+  - **`showTab(t)`** — switches the active tab.
 
 ### To add a new exercise
-Find the group in `DATA` and add an object to its `ex` array. It needs a `yt`
-video ID:
+Find the group in `DATA` and add an object to its `ex` array. Give it a `key`
+unique within that group and fill in every field:
 ```js
-{ name: "Incline Push-up", desc: "Hands on a bench, easier than the floor.",
-  level: "Beginner", yt: "VIDEO_ID_HERE" }
+{ key:"inclinepushup", name:"Incline Push-up", level:"Beginner", yt:"VIDEO_ID",
+  equip:["Bodyweight"], gear:"A bench", sets:3, reps:"10–12", rest:"60s",
+  desc:"Hands on a bench, easier than the floor.",
+  cues:["...","...","..."], mistakes:["...","..."], secondary:["Chest","Triceps"] }
 ```
-Rendering, the embed, and the fallback link are all automatic.
+Rendering, the embed, the equipment filter, and saving are all automatic.
 
 ### To find / swap a video ID
 1. Find a good "proper form" tutorial on YouTube; the ID is the `v=` part of
    `https://www.youtube.com/watch?v=VIDEO_ID`.
-2. **Verify it's embeddable** before trusting it (some videos disable embedding,
-   and IDs can 404). Quick check via the oEmbed endpoint — a `200` with JSON title
-   means it exists and is embeddable:
+2. **Verify it's embeddable** before trusting it — a `200` with JSON means it
+   exists and is embeddable:
    ```bash
    curl -s "https://www.youtube.com/oembed?format=json&url=https://www.youtube.com/watch?v=VIDEO_ID"
    ```
@@ -161,24 +185,19 @@ Rendering, the embed, and the fallback link are all automatic.
 > the oEmbed check above — a wrong ID silently embeds the wrong video or a dead
 > player. (All current IDs were validated this way.)
 
-### To add a whole new muscle group
-1. Add an entry to `DATA` with a new `group` id (with `yt` IDs on each exercise).
-2. Add a clickable shape with `class="muscle" data-group="<id>"` to the front
-   and/or back `<svg>`.
-3. Add the `<id>` to `CHIP_ORDER`.
+### To add a new muscle group
+1. Add an entry to `DATA` with a new group id (with all fields on each exercise).
+2. Add the group id to the right region in `REGIONS`.
 
-### To edit the body figure
-Both SVGs share the same hand-authored coordinate system (`viewBox 0 0 300 560`,
-centered on x=150). The base silhouette (`body-base` / `hair`) is drawn first,
-then `muscle` regions overlay it, then thin `detail` lines on top. If you reshape
-the silhouette, move the overlapping `muscle` paths to match. Verify visually at
-both desktop and mobile widths (the mobile height cap changes how it reads).
+### To add a routine
+Add an object to `ROUTINES` with `name`, `meta`, `note`, and `days` (each day a
+list of `"group:key"` item strings that must exist in `DATA`).
 
 ---
 
 ## Ideas / backlog (not built)
-- "Workout of the day" or a beginner full-body routine.
-- Favorite / save exercises (localStorage).
-- Set/rep guidance per exercise.
-- Personalize (e.g. her name in the title).
-- (Done in v2: embedded curated demo videos; female figure; mobile sizing.)
+- "Workout of the day" / randomized session from the data.
+- Mark exercises as done / simple session logging.
+- Personalize (her name in the title).
+- (Done in v3: equipment filter, sets/reps/cues/mistakes, save/favorites,
+  routines, tips. Done in v2: embedded curated demo videos.)
