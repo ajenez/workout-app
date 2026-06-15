@@ -68,9 +68,14 @@ It's a static file, so any of these work:
 The app is four tabs, switched from a fixed bottom nav bar:
 
 1. **Exercises** — the main screen.
-   - **Equipment filter** at the top: Bodyweight, Dumbbells, Cables, Machines,
-     Barbell. All on by default (built for a fully-equipped city gym). Toggling a
-     chip re-filters the currently-shown muscle group instantly.
+   - **Search** at the very top — a global lookup over every exercise by name,
+     muscle, gear, or equipment ("romanian deadlift", "glutes", "dumbbell"). It
+     ignores the equipment filter so it always finds everything.
+   - **Equipment filter** grouped the way a beginner thinks: **Free weights**
+     (dumbbells + barbell), **Machines & cables**, **Bodyweight**. All on by
+     default. Two one-tap presets — **Free weights only** and **All equipment**
+     (Hannah specifically wanted a fast free-weights view). Toggling re-filters the
+     shown group instantly.
    - **Muscle picker** grouped by region — **Upper body** (chest, back, shoulders,
      biceps, triceps, traps, forearms), **Core** (abs, lower back), **Lower body**
      (glutes, quads, hamstrings, calves).
@@ -87,9 +92,11 @@ The app is four tabs, switched from a fixed bottom nav bar:
 
 ### Exercise card contents
 Each exercise shows: name, a **Beginner / Intermediate** badge, a one-line
-description, a **sets · reps · rest** row, **form cues**, **common mistakes**, a
-**gear** pill, a **secondary muscles** pill, a **▶ Watch demo** button (inline
-YouTube player) and a **♡ Save** button.
+description, a **video thumbnail** (the YouTube poster image — tap it to expand the
+inline player; tap again to close), a **sets · reps · rest** row, **form cues**,
+**common mistakes**, a **gear** pill, a **secondary muscles** pill, and a **♡ Save**
+button. (The thumbnail is the play control — Hannah is a visual learner, so cards
+lead with the image rather than a text button.)
 
 ### Covered muscle groups (13) / exercises (66)
 chest, back, shoulders, biceps, triceps, traps, forearms (upper); abs, lower back
@@ -154,7 +161,9 @@ the **Upper & side** focus.
     - `yt` is a real, oEmbed-verified YouTube ID. **Edit this object to
       add/remove/change exercises or swap a video.**
   - **`REGIONS`** — controls how muscle groups are grouped/ordered in the picker.
-  - **`EQUIP`** — the five equipment filter options.
+  - **`EQUIP`** — the five canonical equipment tags (used on exercises and in
+    filtering). **`EQUIP_GROUPS`** — how they're presented to the user (Free weights
+    / Machines & cables / Bodyweight); a category chip toggles its underlying tags.
   - **`FOCUS` / `FOCUS_MAP`** — the optional per-group focus sub-filter. `FOCUS[group]`
     is the ordered `[key, label]` chips to show (e.g. glutes →
     `[["overall","Overall"],["medius","Upper & side"]]`); `FOCUS_MAP[group][exKey]`
@@ -172,7 +181,11 @@ the **Upper & side** focus.
     group, plus the focus chip row if the group has one. `focus` is optional
     (defaults to the current/"all" focus); the focus chips call it with an explicit
     focus key.
-  - **`toggleEquip(btn)`** — toggles an equipment filter and re-renders.
+  - **`runSearch(raw)`** — global text lookup over `ALL` (name/muscle/gear/
+    equipment); renders matching cards. Ignores the equipment filter. Empty input
+    returns to the "pick a group" placeholder.
+  - **`toggleEquipGroup(key)` / `equipPreset('free'|'all')`** — toggle an equipment
+    category, or apply the Free-weights-only / All presets, then re-render.
   - **`toggleVid(btn)`** — expands/collapses the inline player (one open at a
     time); works for both full cards and routine rows.
   - **`toggleSave(btn)` / `renderSaved()` / `persistSaved()`** — favorites +
@@ -215,9 +228,26 @@ list of `"group:key"` item strings that must exist in `DATA`).
 
 ---
 
-## Ideas / backlog (not built)
-- "Workout of the day" / randomized session from the data.
-- Mark exercises as done / simple session logging.
-- Personalize (her name in the title).
-- (Done in v3: equipment filter, sets/reps/cues/mistakes, save/favorites,
-  routines, tips. Done in v2: embedded curated demo videos.)
+## Roadmap (planned with Hannah, not yet built)
+Decided to allow a small `/assets` folder for images going forward (relaxing the
+strict single-file rule). Phased plan:
+- **Phase 2 — custom routine builder:** let her build & name her own routines from
+  exercises and save them to `localStorage` alongside the built-ins; favorite the
+  built-ins too.
+- **Phase 3 — machine guide (+ machine search):** a directory of common machines
+  with descriptions, a photo (`/assets`), and a demo video; extends search to
+  machines.
+- **Phase 4 — full-body clickable muscle map:** a real illustrated anatomical
+  front/back image in `/assets` with an invisible SVG hotspot overlay wired to the
+  groups, as the visual entry point (chips stay as the mobile fallback). Needs a
+  properly-licensed illustration sourced first.
+
+Smaller ideas: workout-of-the-day / randomized session; mark-as-done session
+logging; personalize (her name in the title).
+
+### Done
+- **Phase 1:** global search, free-weights equipment grouping + presets, video
+  thumbnails on cards (visual-first).
+- **v3:** equipment filter, sets/reps/cues/mistakes, focus sub-filters,
+  save/favorites, routines, tips.
+- **v2:** embedded curated demo videos.

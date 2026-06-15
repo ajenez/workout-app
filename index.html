@@ -70,6 +70,21 @@
     font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.15s;
   }
   .equip-chips button.on { background: var(--accent-soft); border-color: var(--accent); color: var(--text); }
+  .equip-presets { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 11px; }
+  .equip-presets button {
+    background: none; border: none; color: var(--good); font-family: inherit;
+    font-size: 0.76rem; font-weight: 600; cursor: pointer; padding: 0; text-decoration: underline;
+  }
+
+  /* ---- Search bar ---- */
+  .searchbar { margin: 2px 0 14px; }
+  .searchbar input {
+    width: 100%; box-sizing: border-box; font-family: inherit; font-size: 0.92rem;
+    background: var(--bg-soft); border: 1px solid var(--line); color: var(--text);
+    border-radius: 12px; padding: 11px 14px;
+  }
+  .searchbar input::placeholder { color: var(--text-dim); }
+  .searchbar input:focus { outline: none; border-color: var(--accent); }
 
   /* ---- Muscle chips by region ---- */
   .region-h {
@@ -122,6 +137,21 @@
   .lvl.int { color: var(--int); background: var(--int-soft); }
   .card-desc { color: var(--text-dim); font-size: 0.86rem; line-height: 1.45; }
 
+  /* video thumbnail preview (visual-first) */
+  .thumb {
+    position: relative; display: block; width: 100%; margin: 12px 0 0; padding: 0;
+    border: none; cursor: pointer; background: #000; border-radius: 12px;
+    overflow: hidden; aspect-ratio: 16 / 9;
+  }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0.9; }
+  .thumb-play { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+  .thumb .pbtn {
+    width: 52px; height: 52px; border-radius: 50%; background: rgba(255,90,95,0.92);
+    display: flex; align-items: center; justify-content: center; color: #fff;
+    font-size: 1.15rem; padding-left: 3px;
+  }
+  .thumb:active { transform: scale(0.995); }
+
   .srr {
     display: flex; margin: 12px 0;
     background: var(--bg-soft); border-radius: 10px; overflow: hidden;
@@ -165,7 +195,7 @@
   }
   .watch:active { transform: scale(0.98); }
   .save {
-    flex: none; font-family: inherit; cursor: pointer;
+    flex: 1; font-family: inherit; cursor: pointer;
     background: transparent; border: 1px solid #33414f; color: var(--text-dim);
     font-weight: 600; font-size: 0.85rem; padding: 10px 14px; border-radius: 10px;
   }
@@ -261,9 +291,16 @@
   <main>
     <!-- EXERCISES -->
     <section id="view-exercises" class="view on">
+      <div class="searchbar">
+        <input id="search" type="search" autocomplete="off" placeholder="Search exercises, muscles, equipment…" oninput="runSearch(this.value)">
+      </div>
       <div class="filterbar">
-        <div class="filter-h">Equipment available</div>
+        <div class="filter-h">Equipment</div>
         <div class="equip-chips" id="equip-chips"></div>
+        <div class="equip-presets">
+          <button onclick="equipPreset('free')">Free weights only</button>
+          <button onclick="equipPreset('all')">All equipment</button>
+        </div>
       </div>
       <div id="muscle-nav"></div>
       <div id="ex-results">
@@ -786,8 +823,16 @@
     { name:"Lower body", groups:["glutes","quads","hamstrings","calves"] },
   ];
 
-  /* ---- Equipment filter options ---- */
+  /* ---- Equipment filter ----
+     EQUIP = the 5 canonical tags used on exercises + in filtering.
+     EQUIP_GROUPS = how they're presented to the user (beginners think in
+     "free weights / machines / bodyweight", and Hannah wants a free-weights view). */
   const EQUIP = ["Bodyweight","Dumbbells","Cables","Machines","Barbell"];
+  const EQUIP_GROUPS = [
+    { key:"free",    name:"Free weights",      items:["Dumbbells","Barbell"] },
+    { key:"machine", name:"Machines & cables", items:["Machines","Cables"] },
+    { key:"body",    name:"Bodyweight",        items:["Bodyweight"] },
+  ];
 
   /* ---- Focus sub-filters (only groups listed here get a focus chip row) ----
      FOCUS[group]  = ordered [key, label] pairs shown as sub-filter chips.
@@ -882,6 +927,10 @@
             <span class="lvl ${e.level === "Beginner" ? "beg" : "int"}">${esc(e.level)}</span>
           </div>
           <div class="card-desc">${esc(e.desc)}</div>
+          <button class="thumb" onclick="toggleVid(this)" data-yt="${e.yt}" data-q="${q}" aria-label="Play form demo for ${esc(e.name)}">
+            <img loading="lazy" src="https://i.ytimg.com/vi/${e.yt}/hqdefault.jpg" alt="">
+            <span class="thumb-play"><span class="pbtn">▶</span></span>
+          </button>
           <div class="srr">
             <div><b>${esc(e.sets)}</b><span>sets</span></div>
             <div><b>${esc(e.reps)}</b><span>reps</span></div>
@@ -894,8 +943,6 @@
             ${sec}
           </div>
           <div class="actions">
-            <button class="watch" onclick="toggleVid(this)" data-yt="${e.yt}" data-q="${q}"
-                    data-label="▶ Watch demo" data-close="✕ Close">▶ Watch demo</button>
             <button class="save ${saved ? "on" : ""}" onclick="toggleSave(this)" data-id="${id}">${saved ? "♥ Saved" : "♡ Save"}</button>
           </div>
         </div>
@@ -924,6 +971,7 @@
   const activeEquip = new Set(EQUIP); // city gym — everything on by default
 
   function showGroup(group, focus) {
+    const sb = document.getElementById("search"); if (sb) sb.value = ""; // leaving search
     // reset focus to "all" when arriving at a new group; keep it when re-rendering
     if (group !== currentGroup) currentFocus = "all";
     if (focus !== undefined) currentFocus = focus;
@@ -954,11 +1002,46 @@
     if (window.innerWidth <= 760 && focus === undefined) res.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  function toggleEquip(btn) {
-    const x = btn.dataset.eq;
-    if (activeEquip.has(x)) { activeEquip.delete(x); btn.classList.remove("on"); }
-    else { activeEquip.add(x); btn.classList.add("on"); }
+  /* ---- Search (global lookup — ignores the equipment filter) ---- */
+  function runSearch(raw) {
+    const q = raw.trim().toLowerCase();
+    const res = document.getElementById("ex-results");
+    if (!q) { // cleared — return to the "pick a group" state
+      res.innerHTML = `<div class="placeholder">Pick a muscle group above to see exercises that train it.</div>`;
+      return;
+    }
+    document.querySelectorAll("#muscle-nav button").forEach(b => b.classList.remove("on"));
+    currentGroup = null;
+    const ids = Object.keys(ALL).filter(id => {
+      const e = ALL[id];
+      const hay = [e.name, e.groupTitle, e.gear, (e.equip || []).join(" "), (e.secondary || []).join(" ")].join(" ").toLowerCase();
+      return hay.includes(q);
+    });
+    const head = `<div class="res-head"><h2>Search</h2><span class="count">${ids.length} result${ids.length !== 1 ? "s" : ""} for “${esc(raw.trim())}”</span></div>`;
+    res.innerHTML = head + (ids.length
+      ? ids.map(cardHTML).join("")
+      : `<div class="empty">No matches for “${esc(raw.trim())}”. Try a muscle (“glutes”), an exercise (“romanian deadlift”), or equipment (“dumbbell”).</div>`);
+  }
+  function eqGroup(key) { return EQUIP_GROUPS.find(g => g.key === key); }
+  function groupActive(g) { return g.items.every(x => activeEquip.has(x)); }
+  function refreshEquipChips() {
+    document.querySelectorAll("#equip-chips button").forEach(b =>
+      b.classList.toggle("on", groupActive(eqGroup(b.dataset.eqg))));
+  }
+  function reRender() {
+    refreshEquipChips();
     if (currentGroup) showGroup(currentGroup, currentFocus);
+  }
+  function toggleEquipGroup(key) {
+    const g = eqGroup(key);
+    if (groupActive(g)) g.items.forEach(x => activeEquip.delete(x));
+    else g.items.forEach(x => activeEquip.add(x));
+    reRender();
+  }
+  function equipPreset(which) {
+    activeEquip.clear();
+    (which === "free" ? ["Dumbbells", "Barbell"] : EQUIP).forEach(x => activeEquip.add(x));
+    reRender();
   }
 
   /* ---- Video ---- */
@@ -971,7 +1054,7 @@
     const player = wrap.querySelector(".player");
     const isOpen = player.classList.contains("open");
     closeAllPlayers();
-    if (isOpen) return;
+    if (isOpen) return; // tapping the open one (thumbnail or button) just closes it
     player.innerHTML =
       `<iframe src="https://www.youtube-nocookie.com/embed/${btn.dataset.yt}?rel=0&autoplay=1&playsinline=1"`
       + ` title="Exercise demo" loading="lazy"`
@@ -979,8 +1062,10 @@
       + ` allowfullscreen></iframe>`
       + `<a class="fallback" href="${YT}${btn.dataset.q}" target="_blank" rel="noopener">Not the right video? Search YouTube ↗</a>`;
     player.classList.add("open");
-    btn.dataset.open = "1";
-    btn.textContent = btn.dataset.close;
+    // the play control may be the thumbnail (no label) or a labeled button (routine rows) —
+    // flip whichever labeled toggle lives in this wrap so its text shows "close"
+    const labeled = wrap.querySelector("[data-label]");
+    if (labeled) { labeled.dataset.open = "1"; labeled.textContent = labeled.dataset.close; }
     if (window.innerWidth <= 760) player.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
@@ -1056,12 +1141,12 @@
      Init
      ========================================================================= */
   (function init() {
-    // equipment chips
+    // equipment category chips
     const ec = document.getElementById("equip-chips");
-    EQUIP.forEach(x => {
+    EQUIP_GROUPS.forEach(g => {
       const b = document.createElement("button");
-      b.dataset.eq = x; b.textContent = x; b.className = "on";
-      b.addEventListener("click", () => toggleEquip(b));
+      b.dataset.eqg = g.key; b.textContent = g.name; b.className = "on";
+      b.addEventListener("click", () => toggleEquipGroup(g.key));
       ec.appendChild(b);
     });
     // muscle nav by region
