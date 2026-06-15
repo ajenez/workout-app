@@ -28,12 +28,12 @@ CHECKS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "_checks")
 # seed points (or bounding boxes, is_box=1) per muscle, in the 500x900 image space.
 # Bilateral muscles get two entries (L/R). `core` lists several ab-segment seeds (unioned).
 SPECS = {
- 'female-front':[("shoulders",[(182,200),(170,215),(192,188)],0),("shoulders",[(318,200),(330,215),(308,188)],0),
+ 'female-front':[("shoulders",[(148,205),(140,222),(158,190)],0),("shoulders",[(352,205),(360,222),(342,190)],0),
    ("chest",[(218,178)],0),("chest",[(282,178)],0),
    ("core",[(250,235),(250,265),(250,300),(238,250),(262,250),(238,290),(262,290),(250,330)],0),
    ("biceps",[(135,265)],0),("biceps",[(365,265)],0),("forearms",(55,322,120,418),1),("forearms",(380,322,445,418),1),
    ("quads",[(208,510)],0),("quads",[(292,510)],0)],
- 'female-back':[("traps",[(250,175)],0),("shoulders",[(168,195)],0),("shoulders",[(332,195)],0),
+ 'female-back':[("traps",[(250,175)],0),("shoulders",[(158,178),(150,170),(166,186)],0),("shoulders",[(342,178),(350,170),(334,186)],0),
    ("back",[(215,250)],0),("back",[(285,250)],0),("triceps",[(135,265)],0),("triceps",[(365,265)],0),
    ("forearms",(55,322,120,418),1),("forearms",(380,322,445,418),1),("lowerback",[(250,335)],0),
    ("glutes",[(215,395)],0),("glutes",[(285,395)],0),("hamstrings",[(210,520)],0),("hamstrings",[(290,520)],0),
