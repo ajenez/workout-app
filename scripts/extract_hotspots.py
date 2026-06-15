@@ -81,9 +81,13 @@ def flood_region(pm, seeds, do_nudge=True):
         region[canvas == 2] = 1
     return region
 
-def contour_points(region, inset=2, eps_frac=0.009):
+def contour_points(region, inset=2, eps_frac=0.009, close=0):
     if region.sum() == 0: return None
     m = (region * 255).astype(np.uint8)
+    # close bridges thin internal gaps (e.g. the ab division lines) so a segmented
+    # muscle like `core` becomes ONE shape; it preserves the outer silhouette.
+    if close > 0:
+        m = cv2.morphologyEx(m, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (close, close)))
     if inset > 0:
         er = cv2.erode(m, np.ones((inset*2+1, inset*2+1), np.uint8))
         if er.sum() > 0: m = er
@@ -107,7 +111,8 @@ def main():
         for g, seeds, is_box in specs:
             sds = boxseeds(seeds) if is_box else seeds
             reg = flood_region(pm, sds, do_nudge=(not is_box))
-            pts = contour_points(reg)
+            # `core` spans several drawn ab segments — close the gaps so it traces as one region
+            pts = contour_points(reg, close=(19 if g == "core" else 0))
             if pts: polys.append((g, pts))
             else: print("  WARNING empty region:", name, g)
         result[name] = polys
