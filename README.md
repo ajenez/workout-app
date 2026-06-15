@@ -12,9 +12,10 @@ strong core) but new to the gym, so she can feel confident choosing exercises.
 
 ## Status: v3, working
 
-The whole app is a **single self-contained file: [`index.html`](index.html)**.
-No build step, no dependencies, no framework, no backend. Open it in any browser,
-or host it anywhere static.
+The app is [`index.html`](index.html) plus a small [`assets/`](assets) folder of
+images (the body-map artwork, added in Phase 4). No build step, no dependencies, no
+framework, no backend — still a plain static site you can open in any browser or host
+anywhere (GitHub Pages, Netlify, etc.).
 
 Everything below has been built and verified working (muscle picker, equipment
 filter, exercise cards with sets/reps/cues/mistakes, inline video players, saving
@@ -68,17 +69,19 @@ It's a static file, so any of these work:
 The app is five tabs, switched from a fixed bottom nav bar:
 
 1. **Exercises** — the main screen.
-   - **Search** at the very top — a global lookup over every exercise by name,
-     muscle, gear, or equipment ("romanian deadlift", "glutes", "dumbbell"). It
-     ignores the equipment filter so it always finds everything.
+   - **Body map** at the top — a clickable anatomical figure with **Female/Male** and
+     **Front/Back** toggles. Tap a muscle to see its exercises; the map highlights the
+     selection and auto-flips front/back to follow whatever you pick (even from the
+     chips or search). It's the visual entry point Hannah wanted.
+   - **Search** — a global lookup over every exercise by name, muscle, gear, or
+     equipment ("romanian deadlift", "glutes", "dumbbell"). Ignores the equipment
+     filter so it always finds everything (and also matches machines).
    - **Equipment filter** grouped the way a beginner thinks: **Free weights**
-     (dumbbells + barbell), **Machines & cables**, **Bodyweight**. All on by
-     default. Two one-tap presets — **Free weights only** and **All equipment**
-     (Hannah specifically wanted a fast free-weights view). Toggling re-filters the
-     shown group instantly.
-   - **Muscle picker** grouped by region — **Upper body** (chest, back, shoulders,
-     biceps, triceps, traps, forearms), **Core** (abs, lower back), **Lower body**
-     (glutes, quads, hamstrings, calves).
+     (dumbbells + barbell), **Machines & cables**, **Bodyweight**. All on by default;
+     toggling a category re-filters the shown group instantly.
+   - **Muscle picker** chips grouped by region — **Upper body** (chest, back,
+     shoulders, biceps, triceps, traps, forearms), **Core** (abs, lower back),
+     **Lower body** (glutes, quads, hamstrings, calves). A reliable fallback to the map.
    - Tapping a group renders its **exercise cards** below (filtered by equipment).
    - **Focus sub-filter:** some groups have a second chip row to target a region of
      the muscle — **Glutes** (Overall / Upper & side, i.e. gluteus medius),
@@ -120,12 +123,14 @@ the **Upper & side** focus.
 
 ## Key design decisions (please preserve unless asked otherwise)
 
-1. **Single self-contained HTML file**, no build tooling — chosen for trivial
-   sharing and GitHub Pages compatibility. Don't introduce a framework/build step
-   unless the user wants ongoing feature growth.
-2. **Muscle picker is a list of chips, not a body diagram.** The old SVG figure
-   was removed in v3; chips grouped by region are the navigation. Don't re-add an
-   SVG body unless asked.
+1. **`index.html` + a small `assets/` image folder**, no build tooling — chosen for
+   trivial sharing and GitHub Pages compatibility. Don't introduce a framework/build
+   step unless the user wants ongoing feature growth.
+2. **Body map = supplied anatomical images + invisible SVG hotspots** (not a
+   hand-drawn figure). The original hand-drawn SVG was removed in v3; Phase 4 brought
+   the body picker back as licensed line-art images (`assets/<female|male>-<front|back>.png`)
+   with transparent clickable `<polygon>`s on a 500×900 overlay. The region **chips
+   stay** as the mobile fallback. Don't freehand an anatomical SVG.
 3. **YouTube "Watch" buttons embed a curated, hard-coded video per exercise.**
    Each exercise in `DATA` has a `yt` field holding an 11-character YouTube video
    ID, rendered as a `youtube-nocookie.com/embed/<id>` iframe.
@@ -193,6 +198,10 @@ the **Upper & side** focus.
     routine's `items` are filtered to `ALL` at load so the builder's index-based
     move/remove stays aligned.
   - **`TIPS`** — array of gym-confidence tip strings.
+  - **`HOTSPOTS`** — body-map click targets, `HOTSPOTS[female|male][front|back]` =
+    list of `{ g, p }` (muscle group + SVG polygon `points`) overlaid on the
+    `assets/<type>-<view>.png` images on a shared 500×900 canvas. Rendered by
+    `renderBodyMap`; per gender+view because proportions differ.
   - **`ALL`** — a flat map built at load time: `ALL["group:key"]` → the exercise
     object (plus `group` / `groupTitle`). Used by routines, saving, and rendering.
   - **`cardHTML(id)` / `rowHTML(id)`** — render a full exercise card / a compact
@@ -204,8 +213,11 @@ the **Upper & side** focus.
   - **`runSearch(raw)`** — global text lookup over `ALL` (name/muscle/gear/
     equipment); renders matching cards. Ignores the equipment filter. Empty input
     returns to the "pick a group" placeholder.
-  - **`toggleEquipGroup(key)` / `equipPreset('free'|'all')`** — toggle an equipment
-    category, or apply the Free-weights-only / All presets, then re-render.
+  - **`toggleEquipGroup(key)`** — toggle an equipment category, then re-render.
+  - **`renderBodyMap()` / `setBodyType()` / `setBodyView()` / `syncBodyMap(group)`** —
+    the body map. `renderBodyMap` swaps the `assets/` image + draws the hotspot
+    polygons; `syncBodyMap` highlights the selected muscle and auto-switches front/back
+    so chip/search selections stay visible. `showGroup` calls `syncBodyMap`.
   - **`renderRoutinesTab()`** — renders the whole Routines tab: `renderBuilder()`
     (the draft), `renderMyRoutines()` (saved customs), `renderRoutines()` (built-ins).
   - **`toggleDraft(btn)`** — add/remove an exercise from the draft (the ＋ Routine
@@ -256,23 +268,19 @@ list of `"group:key"` item strings that must exist in `DATA`).
 
 ---
 
-## Roadmap (planned with Hannah, not yet built)
-Decided to allow a small `/assets` folder for images going forward (relaxing the
-strict single-file rule). Phased plan:
-- **Phase 4 — full-body clickable muscle map:** a real illustrated anatomical
-  front/back image in `/assets` with an invisible SVG hotspot overlay wired to the
-  groups, as the visual entry point (chips stay as the mobile fallback). Needs a
-  properly-licensed illustration sourced first.
-
-Smaller ideas: workout-of-the-day / randomized session; mark-as-done session
-logging; personalize (her name in the title).
+## Roadmap (planned with Hannah)
+All four planned phases are built. Smaller ideas still open: workout-of-the-day /
+randomized session; mark-as-done session logging; personalize (her name in the title).
 
 ### Done
+- **Phase 4 — full-body clickable muscle map:** female/male + front/back anatomical
+  line-art (user-supplied, in `assets/`, normalized to 500×900 with transparent
+  backgrounds) with an invisible SVG hotspot overlay per muscle, as the visual entry
+  point at the top of the Exercises tab. Chips remain as the mobile fallback. This is
+  why the app now allows a small `assets/` folder.
 - **Phase 3:** machine guide (12 common machines) with how-to steps, demo videos,
-  and a link to each machine's exercises; search now finds machines too. (Used the
-  demo videos' YouTube thumbnails as the machine images rather than sourcing/licensing
-  real photos — so `/assets` wasn't needed yet; it's still planned for the Phase 4
-  muscle map.)
+  and a link to each machine's exercises; search now finds machines too. (Machine
+  images are the demo videos' YouTube thumbnails.)
 - **Phase 2:** custom routine builder — build/name/reorder/save your own routines
   (localStorage), edit/delete them, and "Save a copy" of a built-in to edit.
 - **Phase 1:** global search, free-weights equipment grouping + presets, video

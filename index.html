@@ -70,11 +70,6 @@
     font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.15s;
   }
   .equip-chips button.on { background: var(--accent-soft); border-color: var(--accent); color: var(--text); }
-  .equip-presets { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 11px; }
-  .equip-presets button {
-    background: none; border: none; color: var(--good); font-family: inherit;
-    font-size: 0.76rem; font-weight: 600; cursor: pointer; padding: 0; text-decoration: underline;
-  }
 
   /* ---- Search bar ---- */
   .searchbar { margin: 2px 0 14px; }
@@ -85,6 +80,24 @@
   }
   .searchbar input::placeholder { color: var(--text-dim); }
   .searchbar input:focus { outline: none; border-color: var(--accent); }
+
+  /* ---- Body map (clickable muscle picker) ---- */
+  .bodymap-wrap { margin: 2px 0 18px; }
+  .bodymap-toggles { display: flex; gap: 8px; justify-content: center; margin-bottom: 12px; flex-wrap: wrap; }
+  .seg { display: flex; background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
+  .seg button {
+    border: none; background: none; color: var(--text-dim); font-family: inherit;
+    font-size: 0.8rem; font-weight: 600; padding: 6px 16px; border-radius: 999px; cursor: pointer; transition: 0.15s;
+  }
+  .seg button.on { background: var(--accent); color: #fff; }
+  .bodymap-stage { display: flex; justify-content: center; }
+  .bodymap { position: relative; height: 56vh; max-height: 540px; }
+  .bodymap img { height: 100%; width: auto; display: block; }
+  .bodymap svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+  .hot { fill: transparent; stroke: transparent; cursor: pointer; transition: fill 0.15s; }
+  .hot:hover { fill: rgba(255,90,95,0.25); }
+  .hot.sel { fill: rgba(255,90,95,0.42); stroke: var(--accent); stroke-width: 2.5; }
+  .bodymap-hint { text-align: center; color: var(--text-dim); font-size: 0.8rem; margin-top: 10px; }
 
   /* ---- Muscle chips by region ---- */
   .region-h {
@@ -341,16 +354,26 @@
   <main>
     <!-- EXERCISES -->
     <section id="view-exercises" class="view on">
+      <div class="bodymap-wrap">
+        <div class="bodymap-toggles">
+          <div class="seg" id="seg-body">
+            <button data-body="female" class="on" onclick="setBodyType('female')">Female</button>
+            <button data-body="male" onclick="setBodyType('male')">Male</button>
+          </div>
+          <div class="seg" id="seg-view">
+            <button data-view="front" class="on" onclick="setBodyView('front')">Front</button>
+            <button data-view="back" onclick="setBodyView('back')">Back</button>
+          </div>
+        </div>
+        <div class="bodymap-stage"><div class="bodymap" id="bodymap"></div></div>
+        <div class="bodymap-hint">Tap a muscle to see its exercises — or use the list below.</div>
+      </div>
       <div class="searchbar">
         <input id="search" type="search" autocomplete="off" placeholder="Search exercises, muscles, equipment…" oninput="runSearch(this.value)">
       </div>
       <div class="filterbar">
         <div class="filter-h">Equipment</div>
         <div class="equip-chips" id="equip-chips"></div>
-        <div class="equip-presets">
-          <button onclick="equipPreset('free')">Free weights only</button>
-          <button onclick="equipPreset('all')">All equipment</button>
-        </div>
       </div>
       <div id="muscle-nav"></div>
       <div id="ex-results">
@@ -986,6 +1009,73 @@
       how:["The bar runs on rails, so it won't tip — great for learning","Twist the bar to unrack it, and to rack it at any height","Set the safety stops just below your range as a backstop","Stand so the fixed path matches the lift you're doing"] },
   ];
 
+  /* ---- Body-map hotspots ----
+     Transparent SVG polygons overlaid on the assets/<type>-<view>.png images
+     (all normalized to a 500×900 canvas). `g` = muscle group, `p` = polygon points.
+     Per gender + view because male/female proportions differ. */
+  const HOTSPOTS = {
+    female: {
+      front: [
+        { g:"shoulders", p:"148,180 195,175 198,228 158,240 140,205" },
+        { g:"shoulders", p:"352,180 305,175 302,228 342,240 360,205" },
+        { g:"chest", p:"196,150 304,150 302,205 250,222 198,205" },
+        { g:"core", p:"216,216 284,216 280,335 250,368 220,335" },
+        { g:"biceps", p:"148,205 192,228 148,322 102,305" },
+        { g:"biceps", p:"352,205 308,228 352,322 398,305" },
+        { g:"forearms", p:"102,305 148,322 92,410 48,398" },
+        { g:"forearms", p:"398,305 352,322 408,410 452,398" },
+        { g:"quads", p:"175,422 247,427 244,590 197,595 172,505" },
+        { g:"quads", p:"325,422 253,427 256,590 303,595 328,505" },
+      ],
+      back: [
+        { g:"traps", p:"212,150 288,150 285,200 250,210 215,200" },
+        { g:"shoulders", p:"148,178 195,173 197,222 158,235 140,203" },
+        { g:"shoulders", p:"352,178 305,173 303,222 342,235 360,203" },
+        { g:"back", p:"197,205 303,205 298,300 250,318 202,300" },
+        { g:"triceps", p:"148,203 192,225 148,320 102,303" },
+        { g:"triceps", p:"352,203 308,225 352,320 398,303" },
+        { g:"forearms", p:"102,303 148,320 92,408 48,396" },
+        { g:"forearms", p:"398,303 352,320 408,408 452,396" },
+        { g:"lowerback", p:"216,308 284,308 280,355 250,365 220,355" },
+        { g:"glutes", p:"182,360 318,360 316,425 250,440 184,425" },
+        { g:"hamstrings", p:"180,442 248,446 245,598 198,600 176,510" },
+        { g:"hamstrings", p:"320,442 252,446 255,598 302,600 324,510" },
+        { g:"calves", p:"188,655 246,655 243,805 200,808 182,735" },
+        { g:"calves", p:"312,655 254,655 257,805 300,808 318,735" },
+      ],
+    },
+    male: {
+      front: [
+        { g:"shoulders", p:"128,158 185,150 188,220 150,228 125,195" },
+        { g:"shoulders", p:"372,158 315,150 312,220 350,228 375,195" },
+        { g:"chest", p:"182,150 318,150 315,215 250,238 185,215" },
+        { g:"core", p:"207,235 293,235 288,405 250,428 212,405" },
+        { g:"biceps", p:"130,215 180,228 138,322 92,310" },
+        { g:"biceps", p:"370,215 320,228 362,322 408,310" },
+        { g:"forearms", p:"92,310 138,322 80,428 30,415" },
+        { g:"forearms", p:"408,310 362,322 420,428 470,415" },
+        { g:"quads", p:"170,418 248,422 246,615 196,620 166,510" },
+        { g:"quads", p:"330,418 252,422 254,615 304,620 334,510" },
+      ],
+      back: [
+        { g:"traps", p:"197,150 303,150 300,222 250,235 200,222" },
+        { g:"shoulders", p:"128,158 185,150 188,218 150,228 125,195" },
+        { g:"shoulders", p:"372,158 315,150 312,218 350,228 375,195" },
+        { g:"back", p:"180,225 320,225 312,365 250,388 188,365" },
+        { g:"triceps", p:"130,215 180,228 138,322 92,310" },
+        { g:"triceps", p:"370,215 320,228 362,322 408,310" },
+        { g:"forearms", p:"92,310 138,322 80,428 30,415" },
+        { g:"forearms", p:"408,310 362,322 420,428 470,415" },
+        { g:"lowerback", p:"207,372 293,372 290,420 250,430 210,420" },
+        { g:"glutes", p:"178,425 322,425 320,492 250,505 180,492" },
+        { g:"hamstrings", p:"172,508 248,512 246,645 198,650 168,565" },
+        { g:"hamstrings", p:"328,508 252,512 254,645 302,650 332,565" },
+        { g:"calves", p:"185,668 246,668 243,812 200,815 178,742" },
+        { g:"calves", p:"315,668 254,668 257,812 300,815 322,742" },
+      ],
+    },
+  };
+
   /* =========================================================================
      Flat lookup: every exercise addressable as "group:key".
      ========================================================================= */
@@ -1163,6 +1253,7 @@
     currentGroup = group;
 
     document.querySelectorAll("#muscle-nav button").forEach(b => b.classList.toggle("on", b.dataset.group === group));
+    syncBodyMap(group);
     const d = DATA[group];
     const hasFocus = !!FOCUS[group];
     const ids = d.ex.map(e => `${group}:${e.key}`)
@@ -1196,6 +1287,7 @@
       return;
     }
     document.querySelectorAll("#muscle-nav button").forEach(b => b.classList.remove("on"));
+    document.querySelectorAll("#bodymap .hot").forEach(h => h.classList.remove("sel"));
     currentGroup = null;
     const ids = Object.keys(ALL).filter(id => {
       const e = ALL[id];
@@ -1227,11 +1319,6 @@
     const g = eqGroup(key);
     if (groupActive(g)) g.items.forEach(x => activeEquip.delete(x));
     else g.items.forEach(x => activeEquip.add(x));
-    reRender();
-  }
-  function equipPreset(which) {
-    activeEquip.clear();
-    (which === "free" ? ["Dumbbells", "Barbell"] : EQUIP).forEach(x => activeEquip.add(x));
     reRender();
   }
 
@@ -1404,6 +1491,33 @@
   // jump from a machine to its muscle group's exercises
   function goToGroup(group) { showTab("exercises"); showGroup(group); }
 
+  /* ---- Body map (clickable muscle picker) ---- */
+  let bodyType = "female", bodyView = "front";
+  function viewHasGroup(view, group) { return (HOTSPOTS[bodyType][view] || []).some(s => s.g === group); }
+  function renderBodyMap() {
+    const el = document.getElementById("bodymap");
+    const spots = (HOTSPOTS[bodyType] && HOTSPOTS[bodyType][bodyView]) || [];
+    const polys = spots.map(s =>
+      `<polygon class="hot${currentGroup === s.g ? " sel" : ""}" data-group="${s.g}" points="${s.p}" onclick="showGroup('${s.g}')"></polygon>`
+    ).join("");
+    el.innerHTML = `<img src="assets/${bodyType}-${bodyView}.png" alt="${bodyType} ${bodyView} view — tap a muscle">`
+      + `<svg viewBox="0 0 500 900" preserveAspectRatio="xMidYMid meet">${polys}</svg>`;
+    document.querySelectorAll("#seg-body button").forEach(b => b.classList.toggle("on", b.dataset.body === bodyType));
+    document.querySelectorAll("#seg-view button").forEach(b => b.classList.toggle("on", b.dataset.view === bodyView));
+  }
+  function setBodyType(t) { bodyType = t; renderBodyMap(); }
+  function setBodyView(v) { bodyView = v; renderBodyMap(); }
+  // keep the map in sync when a group is selected from anywhere (hotspot, chip, search, machine)
+  function syncBodyMap(group) {
+    const other = bodyView === "front" ? "back" : "front";
+    if (group && !viewHasGroup(bodyView, group) && viewHasGroup(other, group)) {
+      bodyView = other;
+      renderBodyMap(); // rebuild applies the .sel highlight from currentGroup
+    } else {
+      document.querySelectorAll("#bodymap .hot").forEach(h => h.classList.toggle("sel", h.dataset.group === group));
+    }
+  }
+
   /* ---- Tabs ---- */
   let currentTab = "exercises";
   function showTab(t) {
@@ -1442,6 +1556,7 @@
       });
       mn.appendChild(row);
     });
+    renderBodyMap();
     renderRoutinesTab();
     renderMachines();
     renderTips();
