@@ -85,6 +85,15 @@
   .muscle-chips button:hover { border-color: var(--accent); }
   .muscle-chips button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
 
+  /* ---- Focus sub-filter (appears for groups with sub-targets) ---- */
+  .focus-bar { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 16px; }
+  .focus-chip {
+    border: 1px solid #33414f; background: var(--bg-soft); color: var(--text-dim);
+    padding: 5px 13px; border-radius: 999px; font-size: 0.78rem; font-weight: 600;
+    cursor: pointer; font-family: inherit; transition: 0.15s;
+  }
+  .focus-chip.on { background: var(--good); border-color: var(--good); color: #06222a; }
+
   /* ---- Results ---- */
   #ex-results { margin-top: 22px; }
   .placeholder, .empty {
@@ -406,6 +415,30 @@
           cues:["Start with palms facing you at chin height","Rotate your palms forward as you press overhead","Reverse the rotation on the way down"],
           mistakes:["Rushing the rotation","Arching the back at the top"],
           secondary:["Triceps","Traps"] },
+        { key:"cablelat", name:"Cable Lateral Raise", level:"Beginner", yt:"zpbm-xRHB6k",
+          equip:["Cables"], gear:"Cable + handle on a low pulley", sets:3, reps:"12–15 each", rest:"45s",
+          desc:"Constant cable tension on the side delt — it never lets up at the bottom.",
+          cues:["Cable from the low pulley, behind your body","Lead with your elbow, raise out to shoulder height","Slow on the way down to keep the tension"],
+          mistakes:["Swinging the weight up with your whole body","Shrugging the trap to lift higher"],
+          secondary:["Traps"] },
+        { key:"machinelat", name:"Machine Lateral Raise", level:"Beginner", yt:"IropE3iOk2c",
+          equip:["Machines"], gear:"Lateral raise machine", sets:3, reps:"12–15", rest:"45s",
+          desc:"Guided side-delt raise — the easiest way to feel this muscle.",
+          cues:["Pads against the outside of your upper arms","Lead with your elbows out to the sides","Lower under control, no resting the stack at the bottom"],
+          mistakes:["Shrugging your shoulders up to lift","Flinging the pads up with momentum"],
+          secondary:["Traps"] },
+        { key:"reverfly", name:"Bent-Over Reverse Fly", level:"Beginner", yt:"rQhdsa5QdVU",
+          equip:["Dumbbells"], gear:"Light dumbbells", sets:3, reps:"12–15", rest:"45s",
+          desc:"Hinge forward and raise the dumbbells out to the sides for the rear delts.",
+          cues:["Hinge at the hips, back flat, chest toward the floor","Slight bend in the elbows, raise out to the sides","Lead with your pinkies and squeeze the rear delts"],
+          mistakes:["Using your back instead of the rear delts","Going too heavy so it becomes a row"],
+          secondary:["Traps","Upper back"] },
+        { key:"pecdeck", name:"Reverse Pec Deck", level:"Beginner", yt:"v0rJuhEa59c",
+          equip:["Machines"], gear:"Pec deck / rear-delt machine", sets:3, reps:"12–15", rest:"45s",
+          desc:"Machine rear-delt fly — chest on the pad, open your arms back.",
+          cues:["Chest against the pad, grab the handles","Open your arms out and back, leading with your elbows","Squeeze the rear delts, return with control"],
+          mistakes:["Yanking the handles with momentum","Rounding your shoulders forward at the start"],
+          secondary:["Traps","Upper back"] },
       ]
     },
     biceps: {
@@ -553,6 +586,18 @@
           cues:["Lean back to about 45°, chest up","Rotate from your ribs, not just your arms","Tap each side under control"],
           mistakes:["Rounding your back","Just waving your arms without rotating"],
           secondary:["Obliques"] },
+        { key:"revcrunch", name:"Reverse Crunch", level:"Beginner", yt:"U01aKpf68T8",
+          equip:["Bodyweight"], gear:"None (a mat helps)", sets:3, reps:"12–15", rest:"30s",
+          desc:"Curls the hips up toward the ribs — a beginner-friendly lower-ab move.",
+          cues:["Lie on your back, knees bent over your hips","Curl your hips up off the floor, knees toward your chest","Lower slowly without arching your back"],
+          mistakes:["Swinging your legs to create momentum","Pulling with the hip flexors instead of curling the hips"],
+          secondary:[] },
+        { key:"hangraise", name:"Hanging Knee Raise", level:"Intermediate", yt:"G6a5267YpHM",
+          equip:["Bodyweight"], gear:"Pull-up bar (or captain's chair)", sets:3, reps:"10–15", rest:"45s",
+          desc:"Hang from a bar and raise your knees — strong lower-ab and grip work.",
+          cues:["Hang with a tight grip, shoulders engaged","Raise your knees toward your chest by curling your hips","Lower slowly — don't swing"],
+          mistakes:["Swinging back and forth to fling the knees up","Only bending the knees without curling the hips"],
+          secondary:["Forearms"] },
       ]
     },
     lowerback: {
@@ -619,6 +664,36 @@
           cues:["Hold the weight at your chest, elbows down","Sit down between your hips, chest up","Push the floor away to stand"],
           mistakes:["Heels lifting off the floor","Knees caving inward"],
           secondary:["Quads","Core"] },
+        { key:"hipabd", name:"Hip Abduction Machine", level:"Beginner", yt:"5O_Y9l__iao",
+          equip:["Machines"], gear:"Hip abduction (outer-thigh) machine", sets:3, reps:"15–20", rest:"45s",
+          desc:"Targets the upper / side glute (gluteus medius) by pushing your knees apart.",
+          cues:["Sit tall, or lean slightly forward to bias the glutes","Push your knees apart, leading with the outside of your knees","Control the weight back in — don't let it snap shut"],
+          mistakes:["Using momentum to fling the pads open","Leaning back, which takes the glutes out of it"],
+          secondary:["Glutes"] },
+        { key:"cableabd", name:"Cable Hip Abduction", level:"Beginner", yt:"Jge8zqHf5Xs",
+          equip:["Cables"], gear:"Cable + ankle strap", sets:3, reps:"12–15 each", rest:"45s",
+          desc:"Standing isolation for one side glute at a time.",
+          cues:["Strap on the leg furthest from the machine","Hold the frame for balance, stand tall","Lift the leg out to the side, lead with your heel"],
+          mistakes:["Leaning toward the machine to swing the leg higher","Turning it into a momentum leg-swing"],
+          secondary:["Glutes"] },
+        { key:"bandwalk", name:"Lateral Band Walk", level:"Beginner", yt:"y_bqFDQZSHQ",
+          equip:["Bodyweight"], gear:"A resistance / mini band", sets:3, reps:"10–12 each way", rest:"45s",
+          desc:"Stepping sideways against a band lights up the side glutes — great warm-up.",
+          cues:["Band just above your knees or ankles","Soft quarter-squat, feet at least shoulder-width","Step sideways with control, keep tension on the band"],
+          mistakes:["Letting your feet click together and lose tension","Bobbing up and down instead of staying low"],
+          secondary:["Glutes","Quads"] },
+        { key:"clamshell", name:"Clamshell", level:"Beginner", yt:"aQVApsdOLSI",
+          equip:["Bodyweight"], gear:"None (a mat helps; add a band to progress)", sets:3, reps:"15–20 each", rest:"30s",
+          desc:"A classic side-glute activator — perfect as a warm-up or finisher.",
+          cues:["Lie on your side, knees bent, heels together","Keep your feet stacked and lift your top knee","Don't let your hips roll back — keep them stacked"],
+          mistakes:["Rocking your hips backward to lift higher","Rushing — this one rewards slow reps"],
+          secondary:["Glutes"] },
+        { key:"curtsy", name:"Curtsy Lunge", level:"Intermediate", yt:"g8mCJDtD2DQ",
+          equip:["Dumbbells","Bodyweight"], gear:"Bodyweight or dumbbells", sets:3, reps:"10–12 each", rest:"60s",
+          desc:"Stepping back and across loads the side glute through a bigger range.",
+          cues:["Step one leg back and across behind the other","Drop straight down, front knee over your foot","Push through the front heel to stand"],
+          mistakes:["Letting the front knee cave inward","Twisting your hips — keep them facing forward"],
+          secondary:["Glutes","Quads"] },
       ]
     },
     quads: {
@@ -714,6 +789,25 @@
   /* ---- Equipment filter options ---- */
   const EQUIP = ["Bodyweight","Dumbbells","Cables","Machines","Barbell"];
 
+  /* ---- Focus sub-filters (only groups listed here get a focus chip row) ----
+     FOCUS[group]  = ordered [key, label] pairs shown as sub-filter chips.
+     FOCUS_MAP[group][exKey] = which focus each exercise belongs to. */
+  const FOCUS = {
+    glutes:    [["overall","Overall"], ["medius","Upper & side"]],
+    shoulders: [["front","Front"], ["side","Side"], ["rear","Rear"]],
+    back:      [["lats","Lats"], ["mid","Mid-back"]],
+    core:      [["upper","Upper"], ["lower","Lower"], ["obliques","Obliques"]],
+  };
+  const FOCUS_MAP = {
+    glutes:    { bridge:"overall", hipthrust:"overall", bulgarian:"overall", kickback:"overall", goblet:"overall",
+                 hipabd:"medius", cableabd:"medius", bandwalk:"medius", clamshell:"medius", curtsy:"medius" },
+    shoulders: { dbpress:"front", front:"front", arnold:"front", lateral:"side", cablelat:"side",
+                 machinelat:"side", facepull:"rear", reverfly:"rear", pecdeck:"rear" },
+    back:      { latpulldown:"lats", pullup:"lats", cablerow:"mid", dbrow:"mid", onearmrow:"mid" },
+    core:      { crunch:"upper", plank:"upper", legraise:"lower", revcrunch:"lower", hangraise:"lower",
+                 bicycle:"obliques", twist:"obliques" },
+  };
+
   /* ---- Starter routines (reference exercises by "group:key") ---- */
   const ROUTINES = [
     { name:"Full body — 3× a week", meta:"6 exercises · ~45 min · Beginner",
@@ -746,7 +840,10 @@
      ========================================================================= */
   const ALL = {};
   Object.keys(DATA).forEach(g => {
-    DATA[g].ex.forEach(e => { ALL[`${g}:${e.key}`] = Object.assign({}, e, { group:g, groupTitle:DATA[g].title }); });
+    DATA[g].ex.forEach(e => {
+      const focus = (FOCUS_MAP[g] && FOCUS_MAP[g][e.key]) || null;
+      ALL[`${g}:${e.key}`] = Object.assign({}, e, { group:g, groupTitle:DATA[g].title, focus });
+    });
   });
 
   const YT = "https://www.youtube.com/results?search_query=";
@@ -823,29 +920,45 @@
 
   /* ---- Exercises view ---- */
   let currentGroup = null;
+  let currentFocus = "all";
   const activeEquip = new Set(EQUIP); // city gym — everything on by default
 
-  function showGroup(group) {
+  function showGroup(group, focus) {
+    // reset focus to "all" when arriving at a new group; keep it when re-rendering
+    if (group !== currentGroup) currentFocus = "all";
+    if (focus !== undefined) currentFocus = focus;
     currentGroup = group;
+
     document.querySelectorAll("#muscle-nav button").forEach(b => b.classList.toggle("on", b.dataset.group === group));
     const d = DATA[group];
-    const ids = d.ex.map(e => `${group}:${e.key}`).filter(id => ALL[id].equip.some(x => activeEquip.has(x)));
-    const res = document.getElementById("ex-results");
-    if (!ids.length) {
-      res.innerHTML = `<div class="empty">No ${esc(d.title.toLowerCase())} exercises match your equipment filter. Turn more equipment on above.</div>`;
-      return;
+    const hasFocus = !!FOCUS[group];
+    const ids = d.ex.map(e => `${group}:${e.key}`)
+      .filter(id => ALL[id].equip.some(x => activeEquip.has(x)))
+      .filter(id => currentFocus === "all" || ALL[id].focus === currentFocus);
+
+    let focusBar = "";
+    if (hasFocus) {
+      const opts = [["all", "All"]].concat(FOCUS[group]);
+      focusBar = `<div class="focus-bar">` + opts.map(([k, label]) =>
+        `<button class="focus-chip ${currentFocus === k ? "on" : ""}" onclick="showGroup('${group}','${k}')">${label}</button>`
+      ).join("") + `</div>`;
     }
-    res.innerHTML =
-      `<div class="res-head"><h2>${esc(d.title)}</h2><span class="count">${ids.length} exercise${ids.length > 1 ? "s" : ""}</span></div>`
-      + ids.map(cardHTML).join("");
-    if (window.innerWidth <= 760) res.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    const head = `<div class="res-head"><h2>${esc(d.title)}</h2><span class="count">${ids.length} exercise${ids.length !== 1 ? "s" : ""}</span></div>`;
+    const res = document.getElementById("ex-results");
+    res.innerHTML = head + focusBar + (ids.length
+      ? ids.map(cardHTML).join("")
+      : `<div class="empty">No exercises match your filters. Try turning on more equipment${hasFocus ? " or switching focus" : ""}.</div>`);
+
+    // only auto-scroll when arriving fresh from a muscle chip (focus undefined), not on focus/equip re-renders
+    if (window.innerWidth <= 760 && focus === undefined) res.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function toggleEquip(btn) {
     const x = btn.dataset.eq;
     if (activeEquip.has(x)) { activeEquip.delete(x); btn.classList.remove("on"); }
     else { activeEquip.add(x); btn.classList.add("on"); }
-    if (currentGroup) showGroup(currentGroup);
+    if (currentGroup) showGroup(currentGroup, currentFocus);
   }
 
   /* ---- Video ---- */

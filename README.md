@@ -75,6 +75,11 @@ The app is four tabs, switched from a fixed bottom nav bar:
      biceps, triceps, traps, forearms), **Core** (abs, lower back), **Lower body**
      (glutes, quads, hamstrings, calves).
    - Tapping a group renders its **exercise cards** below (filtered by equipment).
+   - **Focus sub-filter:** some groups have a second chip row to target a region of
+     the muscle — **Glutes** (Overall / Upper & side, i.e. gluteus medius),
+     **Shoulders** (Front / Side / Rear), **Back** (Lats / Mid-back), **Abs**
+     (Upper / Lower / Obliques). "All" is the default; the focus chips stack with
+     the equipment filter.
 2. **Routines** — three expandable starter programs. Each lists its exercises in
    order with sets × reps and a quick ▶ video button.
 3. **Saved** — favorited exercises (full cards), persisted in `localStorage`.
@@ -86,11 +91,13 @@ description, a **sets · reps · rest** row, **form cues**, **common mistakes**,
 **gear** pill, a **secondary muscles** pill, a **▶ Watch demo** button (inline
 YouTube player) and a **♡ Save** button.
 
-### Covered muscle groups (13) / exercises (55)
+### Covered muscle groups (13) / exercises (66)
 chest, back, shoulders, biceps, triceps, traps, forearms (upper); abs, lower back
 (core); glutes, quads, hamstrings, calves (lower). Weighted toward machines /
 dumbbells / cables / bodyweight that are easy to learn. (Lower-body selection
-leans a little more advanced — the user is a strong-legged ex-athlete.)
+leans a little more advanced — the user is a strong-legged ex-athlete.) The glutes
+group includes a full set of gluteus-medius (upper/side glute) exercises behind
+the **Upper & side** focus.
 
 ---
 
@@ -117,8 +124,12 @@ leans a little more advanced — the user is a strong-legged ex-athlete.)
 5. **Routines reference exercises by key, never by duplicating content.** A routine
    item is a `"group:key"` string looked up in the flat `ALL` map. Fix an exercise
    once and it's fixed everywhere it appears.
-6. **Major muscle groups only** (not individual heads) — kept simple for a beginner.
-7. **Dark theme**, `--accent` is the red/coral brand color.
+6. **Major muscle groups only**, but groups can have an optional **focus
+   sub-filter** for the regions a beginner actually cares about (e.g. upper/side
+   glutes). Configured in `FOCUS` / `FOCUS_MAP`, not by splitting the group. Don't
+   add individual-head groups to the muscle picker — use a focus instead.
+7. **Dark theme**, `--accent` is the red/coral brand color. Focus chips use
+   `--good` (teal) to distinguish them from the red muscle chips.
 
 ---
 
@@ -144,6 +155,12 @@ leans a little more advanced — the user is a strong-legged ex-athlete.)
       add/remove/change exercises or swap a video.**
   - **`REGIONS`** — controls how muscle groups are grouped/ordered in the picker.
   - **`EQUIP`** — the five equipment filter options.
+  - **`FOCUS` / `FOCUS_MAP`** — the optional per-group focus sub-filter. `FOCUS[group]`
+    is the ordered `[key, label]` chips to show (e.g. glutes →
+    `[["overall","Overall"],["medius","Upper & side"]]`); `FOCUS_MAP[group][exKey]`
+    assigns each exercise to one focus. Focus is **not** stored on the `DATA` object —
+    it's attached when `ALL` is built. A group absent from `FOCUS` simply shows no
+    focus row. To add a focus to a group, add it to both `FOCUS` and `FOCUS_MAP`.
   - **`ROUTINES`** — array of starter programs; each has `days[]`, each day a list
     of `"group:key"` item strings.
   - **`TIPS`** — array of gym-confidence tip strings.
@@ -151,7 +168,10 @@ leans a little more advanced — the user is a strong-legged ex-athlete.)
     object (plus `group` / `groupTitle`). Used by routines, saving, and rendering.
   - **`cardHTML(id)` / `rowHTML(id)`** — render a full exercise card / a compact
     routine row from a `"group:key"` id.
-  - **`showGroup(group)`** — renders the filtered exercise list for a muscle group.
+  - **`showGroup(group, focus)`** — renders the filtered exercise list for a muscle
+    group, plus the focus chip row if the group has one. `focus` is optional
+    (defaults to the current/"all" focus); the focus chips call it with an explicit
+    focus key.
   - **`toggleEquip(btn)`** — toggles an equipment filter and re-renders.
   - **`toggleVid(btn)`** — expands/collapses the inline player (one open at a
     time); works for both full cards and routine rows.
