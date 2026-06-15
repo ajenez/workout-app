@@ -89,10 +89,10 @@ The app is five tabs, switched from a fixed bottom nav bar:
      (Upper / Lower / Obliques). "All" is the default; the focus chips stack with
      the equipment filter.
 2. **Routines** — build your own and use pre-made ones:
-   - **Routine builder** ("Your routines"): tap **＋ Routine** on any exercise to
-     collect it, then in this tab name it, reorder (▲▼) or remove (✕) exercises, and
-     **Save**. Saved custom routines persist in `localStorage` and can be edited or
-     deleted. The draft survives a reload too.
+   - **Your routines:** tap **＋ Routine** on any exercise → a popup menu lets you add
+     it to an existing routine or **create a new named routine** on the spot (without
+     leaving the page). Saved routines persist in `localStorage`; on this tab each is
+     expandable and editable in place — remove an exercise (✕) or delete the routine.
    - **Starter routines**: three expandable pre-built programs. Each lists its
      exercises with sets × reps and a quick ▶ video, plus **"Save a copy"** to drop
      an editable copy into your own routines.
@@ -107,7 +107,7 @@ Each exercise shows: name, a **Beginner / Intermediate** badge, a one-line
 description, a **video thumbnail** (the YouTube poster image — tap it to expand the
 inline player; tap again to close), a **sets · reps · rest** row, **form cues**,
 **common mistakes**, a **gear** pill, a **secondary muscles** pill, a **♡ Save**
-button, and a **＋ Routine** button (adds it to the routine builder). (The thumbnail
+button, and a **＋ Routine** button (opens the add-to-routine popup). (The thumbnail
 is the play control — Hannah is a visual learner, so cards lead with the image
 rather than a text button.)
 
@@ -192,11 +192,9 @@ the **Upper & side** focus.
     is the video's YouTube thumbnail, not an `/assets` photo. `group` links to that
     muscle's exercises via `goToGroup`. Rendered by `machineCardHTML` /
     `renderMachines`, and also matched by `runSearch`.
-  - **`MYROUTINES` / `DRAFT`** (runtime state, not config) — the user's saved custom
-    routines and the in-progress builder draft. Persist to `localStorage`
-    (`wf_routines` / `wf_draft`), gated by `canSave`. `DRAFT.items` and each saved
-    routine's `items` are filtered to `ALL` at load so the builder's index-based
-    move/remove stays aligned.
+  - **`MYROUTINES`** (runtime state, not config) — the user's saved custom routines
+    `[{ id, name, items }]`. Persist to `localStorage` (`wf_routines`), gated by
+    `canSave`; each routine's `items` are filtered to `ALL` at load.
   - **`TIPS`** — array of gym-confidence tip strings.
   - **`HOTSPOTS`** — body-map click targets, `HOTSPOTS[female|male][front|back]` =
     list of `{ g, p }` (muscle group + SVG polygon `points`) overlaid on the
@@ -218,19 +216,21 @@ the **Upper & side** focus.
     the body map. `renderBodyMap` swaps the `assets/` image + draws the hotspot
     polygons; `syncBodyMap` highlights the selected muscle and auto-switches front/back
     so chip/search selections stay visible. `showGroup` calls `syncBodyMap`.
-  - **`renderRoutinesTab()`** — renders the whole Routines tab: `renderBuilder()`
-    (the draft), `renderMyRoutines()` (saved customs), `renderRoutines()` (built-ins).
-  - **`toggleDraft(btn)`** — add/remove an exercise from the draft (the ＋ Routine
-    button). **`moveDraft` / `removeDraft` / `setDraftName` / `saveDraft` /
-    `clearDraft`** drive the builder; **`editRoutine` / `deleteRoutine`** manage saved
-    customs; **`saveCopyOfBuiltin(i)`** flattens a built-in into an editable copy.
+  - **`openRoutineMenu(btn)`** — opens the add-to-routine popup for a card's exercise.
+    Inside it: **`toggleExInRoutine(rid)`** adds/removes the exercise from a saved
+    routine, **`createRoutineFromMenu()`** makes a new named routine containing it,
+    **`closeRoutineMenu()`** dismisses it.
+  - **`removeExFromRoutine(rid, exId)` / `deleteRoutine(uid)`** — in-place edits on the
+    Routines tab. **`saveCopyOfBuiltin(i)`** flattens a built-in into an editable copy.
+  - **`renderRoutinesTab()`** — renders the Routines tab: `renderMyRoutines()` (saved
+    customs, editable) + `renderRoutines()` (built-ins).
   - **`toggleRoutine(uid)`** — expand/collapse a routine; `uid` is `"b"+i` for
     built-ins or the custom routine's `id`.
   - **`toggleVid(btn)`** — expands/collapses the inline player (one open at a
     time); works for both full cards and routine rows.
   - **`toggleSave(btn)` / `renderSaved()` / `persistSaved()`** — favorites +
     `localStorage` (with the private-mode fallback).
-  - **`renderRoutines()` / `toggleRoutine(i)`**, **`renderTips()`** — routines/tips.
+  - **`renderTips()`** — renders the Tips tab.
   - **`showTab(t)`** — switches the active tab.
 
 ### To add a new exercise
@@ -281,8 +281,9 @@ randomized session; mark-as-done session logging; personalize (her name in the t
 - **Phase 3:** machine guide (12 common machines) with how-to steps, demo videos,
   and a link to each machine's exercises; search now finds machines too. (Machine
   images are the demo videos' YouTube thumbnails.)
-- **Phase 2:** custom routine builder — build/name/reorder/save your own routines
-  (localStorage), edit/delete them, and "Save a copy" of a built-in to edit.
+- **Phase 2:** custom routines — add exercises to a routine from a popup menu on each
+  card (or create a new named routine there), edit/delete them in place, and "Save a
+  copy" of a built-in. (Originally a draft-builder; later reworked into the popup menu.)
 - **Phase 1:** global search, free-weights equipment grouping + presets, video
   thumbnails on cards (visual-first).
 - **v3:** equipment filter, sets/reps/cues/mistakes, focus sub-filters,

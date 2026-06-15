@@ -26,13 +26,18 @@
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
+  /* dark base so overscroll/rubber-band at the page ends never flashes white */
+  html { background: var(--bg); overscroll-behavior-y: none; }
+
   body {
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background: radial-gradient(1200px 600px at 50% -10%, #1d2733 0%, var(--bg) 60%);
+    background-color: var(--bg);
     color: var(--text);
     min-height: 100vh;
     padding-bottom: 78px;
+    overscroll-behavior-y: none;
     -webkit-font-smoothing: antialiased;
   }
 
@@ -269,36 +274,16 @@
   }
   .rrow .player { flex-basis: 100%; }
 
-  /* ---- Routine builder (custom routines) ---- */
+  /* ---- Routines (custom) ---- */
   .section-h {
     font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.6px;
     color: var(--text-dim); margin: 20px 0 10px;
   }
-  .builder { background: var(--bg-soft); border: 1px solid var(--line); border-radius: 14px; padding: 14px; margin-bottom: 14px; }
-  .builder .rname {
-    width: 100%; box-sizing: border-box; font-family: inherit; font-size: 0.92rem;
-    background: var(--card); border: 1px solid var(--line); color: var(--text);
-    border-radius: 10px; padding: 10px 12px; margin-bottom: 10px;
-  }
-  .builder .rname:focus { outline: none; border-color: var(--accent); }
-  .builder .rname::placeholder { color: var(--text-dim); }
   .builder-empty {
     color: var(--text-dim); font-size: 0.86rem; line-height: 1.5;
     background: var(--bg-soft); border: 1px dashed var(--line); border-radius: 14px;
     padding: 16px; margin-bottom: 14px;
   }
-  .draft-row {
-    display: flex; align-items: center; gap: 6px; background: var(--card);
-    border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; margin-bottom: 7px;
-  }
-  .draft-row .d-main { flex: 1; min-width: 0; }
-  .draft-row .d-name { font-weight: 600; font-size: 0.9rem; display: block; }
-  .draft-row .d-meta { color: var(--text-dim); font-size: 0.74rem; }
-  .draft-row button {
-    background: none; border: 1px solid var(--line); color: var(--text-dim);
-    border-radius: 8px; padding: 6px 9px; cursor: pointer; font-family: inherit; font-size: 0.78rem;
-  }
-  .draft-row button:disabled { opacity: 0.35; cursor: default; }
   .builder-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
   .btn-primary {
     flex: 1; background: var(--accent); color: #fff; border: none; border-radius: 10px;
@@ -310,6 +295,42 @@
     border-radius: 10px; padding: 9px 14px; cursor: pointer; font-family: inherit; font-size: 0.82rem;
   }
   .btn-ghost.danger { color: var(--warn); border-color: #5a3a3a; }
+  .rrm {
+    flex: none; background: none; border: 1px solid #5a3a3a; color: var(--warn);
+    border-radius: 8px; padding: 8px 11px; cursor: pointer; font-family: inherit; font-size: 0.8rem;
+  }
+
+  /* ---- Add-to-routine popup menu ---- */
+  .rm-overlay {
+    display: none; position: fixed; inset: 0; z-index: 100;
+    background: rgba(0,0,0,0.55); align-items: center; justify-content: center; padding: 20px;
+  }
+  .rm-overlay.open { display: flex; }
+  .rm-card {
+    background: var(--bg-soft); border: 1px solid var(--line); border-radius: 16px;
+    width: 100%; max-width: 360px; max-height: 80vh; overflow-y: auto; padding: 16px;
+  }
+  .rm-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .rm-head span { flex: 1; font-weight: 700; font-size: 1rem; }
+  .rm-x { background: none; border: none; color: var(--text-dim); font-size: 1.1rem; cursor: pointer; font-family: inherit; }
+  .rm-list { display: flex; flex-direction: column; gap: 7px; margin-bottom: 12px; }
+  .rm-row {
+    display: flex; align-items: center; gap: 10px; background: var(--card);
+    border: 1px solid var(--line); border-radius: 10px; padding: 11px 13px;
+    cursor: pointer; font-family: inherit; color: var(--text); text-align: left;
+  }
+  .rm-row.on { border-color: var(--accent); background: var(--accent-soft); }
+  .rm-name { flex: 1; font-size: 0.92rem; font-weight: 600; }
+  .rm-check { color: var(--accent); font-weight: 700; font-size: 0.82rem; white-space: nowrap; }
+  .rm-empty { color: var(--text-dim); font-size: 0.86rem; padding: 6px 2px 10px; }
+  .rm-new { display: flex; gap: 8px; margin-bottom: 10px; }
+  .rm-new input {
+    flex: 1; box-sizing: border-box; font-family: inherit; font-size: 0.9rem;
+    background: var(--card); border: 1px solid var(--line); color: var(--text);
+    border-radius: 10px; padding: 10px 12px;
+  }
+  .rm-new input:focus { outline: none; border-color: var(--accent); }
+  .rm-done { width: 100%; }
 
   /* ---- Tips ---- */
   .tip {
@@ -385,7 +406,6 @@
     <section id="view-routines" class="view">
       <h2 class="view-title">Routines</h2>
       <div class="section-h">Your routines</div>
-      <div id="builder"></div>
       <div id="myroutines-list"></div>
       <div class="section-h">Starter routines</div>
       <p class="view-sub">Pre-built plans for your first weeks. Tap one to see the exercises, or “Save a copy” to make it yours and edit it.</p>
@@ -422,6 +442,19 @@
     <button data-tab="saved" onclick="showTab('saved')"><span class="ico">♥</span><span class="lab">Saved</span></button>
     <button data-tab="tips" onclick="showTab('tips')"><span class="ico">★</span><span class="lab">Tips</span></button>
   </nav>
+
+  <!-- Add-to-routine popup menu (opened from an exercise card's ＋ Routine button) -->
+  <div id="routine-menu" class="rm-overlay" onclick="if(event.target===this)closeRoutineMenu()">
+    <div class="rm-card">
+      <div class="rm-head"><span id="rm-title">Add to routine</span><button class="rm-x" onclick="closeRoutineMenu()" aria-label="Close">✕</button></div>
+      <div id="rm-list" class="rm-list"></div>
+      <div class="rm-new">
+        <input id="rm-newname" type="text" maxlength="40" placeholder="New routine name…" autocomplete="off">
+        <button class="btn-primary" onclick="createRoutineFromMenu()">Create</button>
+      </div>
+      <button class="btn-ghost rm-done" onclick="closeRoutineMenu()">Done</button>
+    </div>
+  </div>
 
 <script>
   /* =========================================================================
@@ -1108,71 +1141,60 @@
     try { localStorage.setItem("wf_saved", JSON.stringify([...SAVED])); } catch (e) {}
   }
 
-  /* ---- Custom routines + draft builder (localStorage) ----
+  /* ---- Custom routines (localStorage) ----
      MYROUTINES = saved custom routines [{ id, name, items:["group:key"...] }].
-     DRAFT = the in-progress routine being built. Both persist; both degrade
-     gracefully in private mode (canSave gate, same as saved exercises). */
+     Exercises are added to routines via the popup menu (openRoutineMenu) on each
+     exercise card; routines are edited in place on the Routines tab. */
   let MYROUTINES = [];
-  let DRAFT = { name: "", items: [] };
   try { const m = JSON.parse(localStorage.getItem("wf_routines") || "[]"); if (Array.isArray(m)) MYROUTINES = m; } catch (e) {}
-  try { const d = JSON.parse(localStorage.getItem("wf_draft") || "null"); if (d && Array.isArray(d.items)) DRAFT = { name: String(d.name || ""), items: d.items }; } catch (e) {}
-  // drop any references to exercises that no longer exist, so indices stay aligned
-  DRAFT.items = DRAFT.items.filter(id => ALL[id]);
   MYROUTINES.forEach(r => { r.items = (r.items || []).filter(id => ALL[id]); });
   function persistRoutines() { if (!canSave) return; try { localStorage.setItem("wf_routines", JSON.stringify(MYROUTINES)); } catch (e) {} }
-  function persistDraft() { if (!canSave) return; try { localStorage.setItem("wf_draft", JSON.stringify(DRAFT)); } catch (e) {} }
   function newRoutineId() { return "c" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 
-  function inDraft(id) { return DRAFT.items.includes(id); }
-  function refreshAddrButtons() {
-    document.querySelectorAll(".addr").forEach(b => {
-      const on = inDraft(b.dataset.id);
-      b.classList.toggle("on", on);
-      b.textContent = on ? "✓ In routine" : "＋ Routine";
-    });
+  /* ---- Add-to-routine popup menu (opened from an exercise card) ---- */
+  let menuExId = null;
+  function openRoutineMenu(btn) {
+    menuExId = btn.dataset.id;
+    renderRoutineMenu();
+    const inp = document.getElementById("rm-newname"); if (inp) inp.value = "";
+    document.getElementById("routine-menu").classList.add("open");
   }
-  function toggleDraft(btn) {
-    const id = btn.dataset.id;
-    const i = DRAFT.items.indexOf(id);
-    if (i >= 0) DRAFT.items.splice(i, 1); else DRAFT.items.push(id);
-    persistDraft();
-    refreshAddrButtons();
+  function closeRoutineMenu() {
+    document.getElementById("routine-menu").classList.remove("open");
+    menuExId = null;
+  }
+  function renderRoutineMenu() {
+    const ex = ALL[menuExId]; if (!ex) return;
+    document.getElementById("rm-title").textContent = `Add “${ex.name}” to…`;
+    document.getElementById("rm-list").innerHTML = MYROUTINES.length
+      ? MYROUTINES.map(r => {
+          const inIt = r.items.includes(menuExId);
+          return `<button class="rm-row${inIt ? " on" : ""}" onclick="toggleExInRoutine('${r.id}')">`
+            + `<span class="rm-name">${esc(r.name)}</span><span class="rm-check">${inIt ? "✓ added" : "＋ add"}</span></button>`;
+        }).join("")
+      : `<div class="rm-empty">No routines yet — create one below.</div>`;
+  }
+  function toggleExInRoutine(rid) {
+    const r = MYROUTINES.find(x => x.id === rid); if (!r) return;
+    const i = r.items.indexOf(menuExId);
+    if (i >= 0) r.items.splice(i, 1); else r.items.push(menuExId);
+    persistRoutines();
+    renderRoutineMenu();
     if (currentTab === "routines") renderRoutinesTab();
   }
-  function setDraftName(v) {
-    DRAFT.name = v; persistDraft();
-    const btn = document.getElementById("save-routine-btn");
-    if (btn) btn.disabled = !(v.trim() && DRAFT.items.length);
+  function createRoutineFromMenu() {
+    const inp = document.getElementById("rm-newname");
+    const name = inp.value.trim(); if (!name) return;
+    MYROUTINES.push({ id: newRoutineId(), name, items: [menuExId] });
+    persistRoutines();
+    inp.value = "";
+    renderRoutineMenu();
+    if (currentTab === "routines") renderRoutinesTab();
   }
-  function moveDraft(idx, dir) {
-    const j = idx + dir;
-    if (j < 0 || j >= DRAFT.items.length) return;
-    [DRAFT.items[idx], DRAFT.items[j]] = [DRAFT.items[j], DRAFT.items[idx]];
-    persistDraft(); renderRoutinesTab();
-  }
-  function removeDraft(idx) {
-    DRAFT.items.splice(idx, 1);
-    persistDraft(); refreshAddrButtons(); renderRoutinesTab();
-  }
-  function clearDraft() {
-    DRAFT = { name: "", items: [] };
-    persistDraft(); refreshAddrButtons(); renderRoutinesTab();
-  }
-  function saveDraft() {
-    const name = DRAFT.name.trim();
-    if (!name || !DRAFT.items.length) return;
-    MYROUTINES.push({ id: newRoutineId(), name, items: DRAFT.items.slice() });
-    DRAFT = { name: "", items: [] };
-    persistRoutines(); persistDraft(); refreshAddrButtons(); renderRoutinesTab();
-  }
-  function editRoutine(uid) {
-    const idx = MYROUTINES.findIndex(r => r.id === uid);
-    if (idx < 0) return;
-    const r = MYROUTINES[idx];
-    DRAFT = { name: r.name, items: r.items.slice() };
-    MYROUTINES.splice(idx, 1);
-    persistRoutines(); persistDraft(); refreshAddrButtons(); renderRoutinesTab();
-    document.getElementById("builder").scrollIntoView({ behavior: "smooth", block: "start" });
+  function removeExFromRoutine(rid, exId) {
+    const r = MYROUTINES.find(x => x.id === rid); if (!r) return;
+    r.items = r.items.filter(x => x !== exId);
+    persistRoutines(); renderRoutinesTab();
   }
   function deleteRoutine(uid) {
     MYROUTINES = MYROUTINES.filter(r => r.id !== uid);
@@ -1224,7 +1246,7 @@
           </div>
           <div class="actions">
             <button class="save ${saved ? "on" : ""}" onclick="toggleSave(this)" data-id="${id}">${saved ? "♥ Saved" : "♡ Save"}</button>
-            <button class="addr ${inDraft(id) ? "on" : ""}" onclick="toggleDraft(this)" data-id="${id}">${inDraft(id) ? "✓ In routine" : "＋ Routine"}</button>
+            <button class="addr" onclick="openRoutineMenu(this)" data-id="${id}">＋ Routine</button>
           </div>
         </div>
         <div class="player"></div>
@@ -1379,45 +1401,30 @@
 
   /* ---- Routines tab (custom builder + saved customs + built-ins) ---- */
   function renderRoutinesTab() {
-    renderBuilder();
     renderMyRoutines();
     renderRoutines();
   }
 
-  function renderBuilder() {
-    const el = document.getElementById("builder");
-    if (!DRAFT.items.length && !DRAFT.name) {
-      el.innerHTML = `<div class="builder-empty">Build your own routine: tap <b>＋ Routine</b> on any exercise in the Exercises tab and it'll collect here. Then name it and save.</div>`;
-      return;
-    }
-    const rows = DRAFT.items.map((id, idx) => {
-      const e = ALL[id];
-      return `
-        <div class="draft-row">
-          <div class="d-main"><span class="d-name">${esc(e.name)}</span><span class="d-meta">${esc(e.groupTitle)} · ${esc(e.sets)} × ${esc(e.reps)}</span></div>
-          <button onclick="moveDraft(${idx},-1)" aria-label="Move up" ${idx === 0 ? "disabled" : ""}>▲</button>
-          <button onclick="moveDraft(${idx},1)" aria-label="Move down" ${idx === DRAFT.items.length - 1 ? "disabled" : ""}>▼</button>
-          <button onclick="removeDraft(${idx})" aria-label="Remove">✕</button>
-        </div>`;
-    }).join("") || `<div class="builder-empty">No exercises yet — add some from the Exercises tab.</div>`;
-    const ready = DRAFT.name.trim() && DRAFT.items.length;
-    el.innerHTML = `
-      <div class="builder">
-        <input class="rname" type="text" placeholder="Name your routine (e.g. Leg day)" value="${esc(DRAFT.name)}" oninput="setDraftName(this.value)">
-        ${rows}
-        <div class="builder-actions">
-          <button class="btn-primary" id="save-routine-btn" onclick="saveDraft()" ${ready ? "" : "disabled"}>Save routine</button>
-          <button class="btn-ghost" onclick="clearDraft()">Clear</button>
-        </div>
-      </div>`;
-  }
-
   function renderMyRoutines() {
     const el = document.getElementById("myroutines-list");
+    if (!MYROUTINES.length) {
+      el.innerHTML = `<div class="builder-empty">No routines yet. On the <b>Exercises</b> tab, tap <b>＋ Routine</b> on any exercise to add it to a routine (or create a new one).</div>`;
+      return;
+    }
     el.innerHTML = MYROUTINES.map(r => {
       const items = r.items.filter(id => ALL[id]);
-      const rows = items.map(rowHTML).join("");
       const uid = r.id;
+      const rows = items.map(id => {
+        const e = ALL[id];
+        const q = encodeURIComponent(e.name + " proper form tutorial");
+        return `
+          <div class="rrow">
+            <div class="rrow-main"><span class="rrow-name">${esc(e.name)}</span><span class="rrow-meta">${esc(e.sets)} sets × ${esc(e.reps)}</span></div>
+            <button class="rwatch" onclick="toggleVid(this)" data-yt="${e.yt}" data-q="${q}" data-label="▶" data-close="✕">▶</button>
+            <button class="rrm" onclick="removeExFromRoutine('${uid}','${id}')" aria-label="Remove from routine">✕</button>
+            <div class="player"></div>
+          </div>`;
+      }).join("") || `<div class="rm-empty">No exercises yet — add some from the Exercises tab.</div>`;
       return `
         <div class="routine">
           <button class="routine-head" onclick="toggleRoutine('${uid}')">
@@ -1427,8 +1434,7 @@
           <div class="routine-body" id="rbody-${uid}">
             ${rows}
             <div class="builder-actions">
-              <button class="btn-ghost" onclick="editRoutine('${uid}')">Edit</button>
-              <button class="btn-ghost danger" onclick="deleteRoutine('${uid}')">Delete</button>
+              <button class="btn-ghost danger" onclick="deleteRoutine('${uid}')">Delete routine</button>
             </div>
           </div>
         </div>`;

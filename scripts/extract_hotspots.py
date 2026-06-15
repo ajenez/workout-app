@@ -24,6 +24,7 @@ import cv2, numpy as np
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ASSETS = os.path.join(ROOT, "assets")
 CHECKS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "_checks")
+DIM = (52, 60, 72)  # dark slate for non-clickable body fill (so only muscles read as light/tappable)
 
 # seed points (or bounding boxes, is_box=1) per muscle, in the 500x900 image space.
 # Bilateral muscles get two entries (L/R). `core` lists several ab-segment seeds (unioned).
@@ -108,16 +109,24 @@ def main():
         im = Image.open(os.path.join(ASSETS, f"{name}.png")).convert("RGBA")
         pm = passable_mask(im); h, w = pm.shape
         polys = []
+        clickable = np.zeros((h, w), np.uint8)
         for g, seeds, is_box in specs:
             sds = boxseeds(seeds) if is_box else seeds
             reg = flood_region(pm, sds, do_nudge=(not is_box))
+            clickable = np.maximum(clickable, reg)
             # `core` spans several drawn ab segments — close the gaps so it traces as one region
             pts = contour_points(reg, close=(19 if g == "core" else 0))
             if pts: polys.append((g, pts))
             else: print("  WARNING empty region:", name, g)
         result[name] = polys
-        # verification overlay
-        base = np.array(im); al = base[:, :, 3:4] / 255.0
+        # Dim every light body-fill pixel that isn't part of a clickable muscle, so only
+        # tappable muscles read as light. Idempotent: dimmed pixels are no longer "passable".
+        arr = np.array(im)
+        nonclick = (pm > 0) & (clickable == 0)
+        arr[nonclick] = (DIM[0], DIM[1], DIM[2], 255)
+        Image.fromarray(arr).save(os.path.join(ASSETS, f"{name}.png"))
+        # verification overlay (from the dimmed image)
+        base = arr; al = base[:, :, 3:4] / 255.0
         rgb = (base[:, :, :3] * al + 255 * (1 - al)).astype(np.uint8).copy()
         over = rgb.copy()
         for g, pts in polys:
