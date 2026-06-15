@@ -135,6 +135,7 @@
   }
   .lvl.beg { color: var(--beg); background: var(--beg-soft); }
   .lvl.int { color: var(--int); background: var(--int-soft); }
+  .lvl.machine { color: var(--good); background: #4dd0e11a; }
   .card-desc { color: var(--text-dim); font-size: 0.86rem; line-height: 1.45; }
 
   /* video thumbnail preview (visual-first) */
@@ -368,6 +369,13 @@
       <div id="routine-list"></div>
     </section>
 
+    <!-- MACHINES -->
+    <section id="view-machines" class="view">
+      <h2 class="view-title">Machine guide</h2>
+      <p class="view-sub">What the common machines do and how to set them up — no guessing.</p>
+      <div id="machines-list"></div>
+    </section>
+
     <!-- SAVED -->
     <section id="view-saved" class="view">
       <h2 class="view-title">Saved exercises</h2>
@@ -387,6 +395,7 @@
   <nav class="tabbar">
     <button data-tab="exercises" class="on" onclick="showTab('exercises')"><span class="ico">≡</span><span class="lab">Exercises</span></button>
     <button data-tab="routines" onclick="showTab('routines')"><span class="ico">▦</span><span class="lab">Routines</span></button>
+    <button data-tab="machines" onclick="showTab('machines')"><span class="ico">⚙</span><span class="lab">Machines</span></button>
     <button data-tab="saved" onclick="showTab('saved')"><span class="ico">♥</span><span class="lab">Saved</span></button>
     <button data-tab="tips" onclick="showTab('tips')"><span class="ico">★</span><span class="lab">Tips</span></button>
   </nav>
@@ -933,6 +942,50 @@
     "Wipe a machine down when you're done and re-rack your weights. That's the whole etiquette, really.",
   ];
 
+  /* ---- Machine guide ----
+     Each: { name, trains, how:[...], yt, group? }.
+     `yt` is a real, oEmbed-verified ID (most reuse an exercise demo of that machine);
+     the card image is that video's thumbnail. `group` (optional) links to the
+     matching muscle group's exercises. */
+  const MACHINES = [
+    { name:"Lat Pulldown", group:"back", yt:"CAwf7n6Luuc",
+      trains:"Back and lats — your big pulling muscles.",
+      how:["Set the thigh pad snug so you don't lift off the seat","Grip the bar a bit wider than your shoulders","Pull the bar to your upper chest, leading with your elbows","Let it rise slowly until your arms are straight"] },
+    { name:"Seated Cable Row", group:"back", yt:"EU7bOadUsNI",
+      trains:"Mid-back and lats.",
+      how:["Sit tall with a slight knee bend, chest up","Pull the handle to your belly button","Squeeze your shoulder blades together","Return slowly without rounding your back"] },
+    { name:"Chest Press Machine", group:"chest", yt:"pLofEAcfsO8",
+      trains:"Chest, front shoulders and triceps.",
+      how:["Adjust the seat so the handles line up with mid-chest","Press forward smoothly, stop just short of locking out","Control the handles back — don't let them slam"] },
+    { name:"Leg Press", group:"quads", yt:"8nm863C0c60",
+      trains:"Quads and glutes — loads your legs safely.",
+      how:["Feet shoulder-width in the middle of the platform","Lower until your knees reach about 90°","Press through your heels, keep a soft knee at the top","Keep your lower back flat against the seat"] },
+    { name:"Leg Extension", group:"quads", yt:"tTbJBUKnWU8",
+      trains:"Front of the thighs (quads).",
+      how:["Line your knee up with the machine's pivot point","Pad rests on your lower shins","Straighten your legs, squeeze, then lower slowly"] },
+    { name:"Seated Leg Curl", group:"hamstrings", yt:"14OrOWlM5QU",
+      trains:"Hamstrings (back of the thighs).",
+      how:["Pad on your lower calves, thigh bar locked down","Curl your heels toward your glutes","Slow return — don't let the weight slam"] },
+    { name:"Hip Abduction Machine", group:"glutes", yt:"5O_Y9l__iao",
+      trains:"Outer / side glutes (gluteus medius).",
+      how:["Sit tall, or lean slightly forward for more glute","Push your knees apart against the pads","Control the weight back in — no snapping shut"] },
+    { name:"Lateral Raise Machine", group:"shoulders", yt:"IropE3iOk2c",
+      trains:"Side shoulders (lateral delts).",
+      how:["Pads against the outside of your upper arms","Lead with your elbows out to the sides","Lower under control — no shrugging up"] },
+    { name:"Reverse Pec Deck", group:"shoulders", yt:"v0rJuhEa59c",
+      trains:"Rear shoulders and upper back.",
+      how:["Sit with your chest against the pad","Open your arms out and back, leading with the elbows","Squeeze, then return with control"] },
+    { name:"Assisted Pull-up Machine", group:"back", yt:"fnHeovkmkkk",
+      trains:"Back and biceps — builds toward real pull-ups.",
+      how:["Set the assistance weight (more weight = more help)","Kneel or stand on the pad","Pull your chest up toward the bar","Lower slowly for the full range"] },
+    { name:"Cable Machine", group:null, yt:"VRA8uBpWFSs",
+      trains:"Almost anything — adjustable pulleys for dozens of exercises.",
+      how:["Set the pulley height for your exercise (low, middle or high)","Clip on the handle or rope you need","Keep tension on the cable through the whole rep","Start light — cables expose sloppy form fast"] },
+    { name:"Smith Machine", group:null, yt:"fH-hrxExhwI",
+      trains:"Squats, presses and more on a fixed barbell path.",
+      how:["The bar runs on rails, so it won't tip — great for learning","Twist the bar to unrack it, and to rack it at any height","Set the safety stops just below your range as a backstop","Stand so the fixed path matches the lift you're doing"] },
+  ];
+
   /* =========================================================================
      Flat lookup: every exercise addressable as "group:key".
      ========================================================================= */
@@ -1149,10 +1202,16 @@
       const hay = [e.name, e.groupTitle, e.gear, (e.equip || []).join(" "), (e.secondary || []).join(" ")].join(" ").toLowerCase();
       return hay.includes(q);
     });
-    const head = `<div class="res-head"><h2>Search</h2><span class="count">${ids.length} result${ids.length !== 1 ? "s" : ""} for “${esc(raw.trim())}”</span></div>`;
-    res.innerHTML = head + (ids.length
-      ? ids.map(cardHTML).join("")
-      : `<div class="empty">No matches for “${esc(raw.trim())}”. Try a muscle (“glutes”), an exercise (“romanian deadlift”), or equipment (“dumbbell”).</div>`);
+    const machines = MACHINES.filter(m => (m.name + " " + m.trains).toLowerCase().includes(q));
+    const total = ids.length + machines.length;
+    const head = `<div class="res-head"><h2>Search</h2><span class="count">${total} result${total !== 1 ? "s" : ""} for “${esc(raw.trim())}”</span></div>`;
+    if (!total) {
+      res.innerHTML = head + `<div class="empty">No matches for “${esc(raw.trim())}”. Try a muscle (“glutes”), an exercise (“romanian deadlift”), a machine (“leg press”), or equipment (“dumbbell”).</div>`;
+      return;
+    }
+    const machineSection = machines.length ? `<div class="section-h">Machines</div>` + machines.map(machineCardHTML).join("") : "";
+    const exSection = ids.length ? `<div class="section-h">Exercises</div>` + ids.map(cardHTML).join("") : "";
+    res.innerHTML = head + machineSection + exSection;
   }
   function eqGroup(key) { return EQUIP_GROUPS.find(g => g.key === key); }
   function groupActive(g) { return g.items.every(x => activeEquip.has(x)); }
@@ -1317,6 +1376,34 @@
     document.getElementById("tips-list").innerHTML = TIPS.map(t => `<div class="tip">${esc(t)}</div>`).join("");
   }
 
+  /* ---- Machine guide ---- */
+  function machineCardHTML(m) {
+    const q = encodeURIComponent(m.name + " how to use");
+    const how = m.how.map(h => `<li>${esc(h)}</li>`).join("");
+    const link = m.group
+      ? `<div class="actions"><button class="btn-ghost" onclick="goToGroup('${m.group}')">See ${esc(DATA[m.group].title.toLowerCase())} exercises</button></div>`
+      : "";
+    return `
+      <div class="ex-wrap">
+        <div class="card">
+          <div class="card-top"><div class="card-name">${esc(m.name)}</div><span class="lvl machine">Machine</span></div>
+          <div class="card-desc">${esc(m.trains)}</div>
+          <button class="thumb" onclick="toggleVid(this)" data-yt="${m.yt}" data-q="${q}" aria-label="Play a demo of the ${esc(m.name)}">
+            <img loading="lazy" src="https://i.ytimg.com/vi/${m.yt}/hqdefault.jpg" alt="">
+            <span class="thumb-play"><span class="pbtn">▶</span></span>
+          </button>
+          <div class="block"><div class="block-h">How to use it</div><ul class="cues">${how}</ul></div>
+          ${link}
+        </div>
+        <div class="player"></div>
+      </div>`;
+  }
+  function renderMachines() {
+    document.getElementById("machines-list").innerHTML = MACHINES.map(machineCardHTML).join("");
+  }
+  // jump from a machine to its muscle group's exercises
+  function goToGroup(group) { showTab("exercises"); showGroup(group); }
+
   /* ---- Tabs ---- */
   let currentTab = "exercises";
   function showTab(t) {
@@ -1356,6 +1443,7 @@
       mn.appendChild(row);
     });
     renderRoutinesTab();
+    renderMachines();
     renderTips();
     renderSaved();
   })();

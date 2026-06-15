@@ -65,7 +65,7 @@ It's a static file, so any of these work:
 
 ## What it does (features)
 
-The app is four tabs, switched from a fixed bottom nav bar:
+The app is five tabs, switched from a fixed bottom nav bar:
 
 1. **Exercises** — the main screen.
    - **Search** at the very top — a global lookup over every exercise by name,
@@ -93,8 +93,11 @@ The app is four tabs, switched from a fixed bottom nav bar:
    - **Starter routines**: three expandable pre-built programs. Each lists its
      exercises with sets × reps and a quick ▶ video, plus **"Save a copy"** to drop
      an editable copy into your own routines.
-3. **Saved** — favorited exercises (full cards), persisted in `localStorage`.
-4. **Tips** — short gym-confidence tips.
+3. **Machines** — a guide to common gym machines. Each card shows what the machine
+   trains, how to set it up (beginner steps), a demo video (its YouTube thumbnail is
+   the still image), and a "See _[muscle]_ exercises" link. Search finds machines too.
+4. **Saved** — favorited exercises (full cards), persisted in `localStorage`.
+5. **Tips** — short gym-confidence tips.
 
 ### Exercise card contents
 Each exercise shows: name, a **Beginner / Intermediate** badge, a one-line
@@ -179,6 +182,11 @@ the **Upper & side** focus.
     focus row. To add a focus to a group, add it to both `FOCUS` and `FOCUS_MAP`.
   - **`ROUTINES`** — array of built-in starter programs; each has `days[]`, each day
     a list of `"group:key"` item strings.
+  - **`MACHINES`** — machine-guide entries `{ name, trains, how:[...], yt, group? }`.
+    `yt` reuses (mostly) an exercise's validated demo of that machine; the card image
+    is the video's YouTube thumbnail, not an `/assets` photo. `group` links to that
+    muscle's exercises via `goToGroup`. Rendered by `machineCardHTML` /
+    `renderMachines`, and also matched by `runSearch`.
   - **`MYROUTINES` / `DRAFT`** (runtime state, not config) — the user's saved custom
     routines and the in-progress builder draft. Persist to `localStorage`
     (`wf_routines` / `wf_draft`), gated by `canSave`. `DRAFT.items` and each saved
@@ -251,9 +259,6 @@ list of `"group:key"` item strings that must exist in `DATA`).
 ## Roadmap (planned with Hannah, not yet built)
 Decided to allow a small `/assets` folder for images going forward (relaxing the
 strict single-file rule). Phased plan:
-- **Phase 3 — machine guide (+ machine search):** a directory of common machines
-  with descriptions, a photo (`/assets`), and a demo video; extends search to
-  machines.
 - **Phase 4 — full-body clickable muscle map:** a real illustrated anatomical
   front/back image in `/assets` with an invisible SVG hotspot overlay wired to the
   groups, as the visual entry point (chips stay as the mobile fallback). Needs a
@@ -263,6 +268,11 @@ Smaller ideas: workout-of-the-day / randomized session; mark-as-done session
 logging; personalize (her name in the title).
 
 ### Done
+- **Phase 3:** machine guide (12 common machines) with how-to steps, demo videos,
+  and a link to each machine's exercises; search now finds machines too. (Used the
+  demo videos' YouTube thumbnails as the machine images rather than sourcing/licensing
+  real photos — so `/assets` wasn't needed yet; it's still planned for the Phase 4
+  muscle map.)
 - **Phase 2:** custom routine builder — build/name/reorder/save your own routines
   (localStorage), edit/delete them, and "Save a copy" of a built-in to edit.
 - **Phase 1:** global search, free-weights equipment grouping + presets, video
