@@ -1,4 +1,4 @@
-# Workout Finder
+# Form
 
 A mobile-first web app that helps a gym beginner figure out what to do: pick a
 muscle group from a list and get beginner-friendly exercises that train it — each
