@@ -5,8 +5,8 @@ muscle group from a list and get beginner-friendly exercises that train it — e
 with **sets/reps/rest guidance**, **form cues**, **common mistakes to avoid**, and
 an **embedded YouTube demo** of proper form that plays right in the page.
 
-Built for the author's girlfriend, who's a lifelong athlete (soccer — strong legs,
-strong core) but new to the gym, so she can feel confident choosing exercises.
+Built for a gym beginner who's a lifelong athlete (soccer — strong legs, strong
+core) but new to the gym, to help them feel confident choosing exercises.
 
 ---
 
