@@ -468,10 +468,11 @@
     font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.5px;
     color: var(--good); font-weight: 700; margin-bottom: 5px;
   }
-  .tip-card-text { font-size: 0.88rem; line-height: 1.5; margin-bottom: 8px; }
+  .tip-card-text { font-size: 0.88rem; line-height: 1.5; margin-bottom: 10px; }
+  .tip-card-footer { display: flex; justify-content: flex-end; }
   .tip-card-next {
     font-family: inherit; background: none; border: none; cursor: pointer;
-    font-size: 0.78rem; color: var(--text-dim); padding: 0; float: right;
+    font-size: 0.78rem; color: var(--text-dim); padding: 0;
   }
   .tip-card-next:active { color: var(--text); }
 
@@ -520,7 +521,7 @@
       <div class="tip-card" id="tip-card">
         <div class="tip-card-label">Tip</div>
         <div class="tip-card-text" id="tip-card-text"></div>
-        <button class="tip-card-next" onclick="nextTip()">Next tip →</button>
+        <div class="tip-card-footer"><button class="tip-card-next" onclick="nextTip()">Next tip →</button></div>
       </div>
       <div class="seg mode-seg" id="seg-mode">
         <button data-mode="exercises" class="on" onclick="setViewMode('exercises')">Exercises</button>
@@ -1075,6 +1076,18 @@
           cues:["Start in a plank, hands under your shoulders","Drive one knee toward your chest, quickly switch legs","Keep your hips level — don't let them bounce up"],
           mistakes:["Hips rising so it becomes a piked position","Going so fast the core engagement disappears"],
           secondary:["Shoulders"] },
+        { key:"vsit", name:"V-Sit", level:"Intermediate", yt:"MXVyGLBKBEk",
+          equip:["Bodyweight"], gear:"None (a mat helps)", sets:3, reps:"10–15s hold", rest:"45s",
+          desc:"Balance on your sitting bones with legs and torso raised — hits the entire abs hard.",
+          cues:["Sit tall, then lean back and lift both legs to form a V shape","Keep your chest up and spine long — don't round forward","Reach your arms forward parallel to the floor to help balance"],
+          mistakes:["Rounding the lower back into a C-shape","Holding your breath instead of bracing"],
+          secondary:["Hip flexors"] },
+        { key:"jackknife", name:"Jackknife", level:"Beginner", yt:"GI4S_zkJJkM",
+          equip:["Bodyweight"], gear:"None (a mat helps)", sets:3, reps:"12–15", rest:"45s",
+          desc:"Lie flat and fold your body in half — meets in the middle to work upper and lower abs together.",
+          cues:["Start flat on your back, arms overhead","Simultaneously raise your legs and reach your hands toward your feet","Lower slowly back to flat — don't let your feet crash down"],
+          mistakes:["Using momentum to swing up instead of engaging the abs","Bending the knees to make it easier — keep legs straight"],
+          secondary:["Hip flexors"] },
       ]
     },
     lowerback: {
@@ -1380,8 +1393,8 @@
                  machinelat:"side", facepull:"rear", reverfly:"rear", pecdeck:"rear" },
     back:      { latpulldown:"lats", pullup:"lats", sapulldown:"lats",
                  cablerow:"mid", dbrow:"mid", onearmrow:"mid", csrow:"mid", tbarrow:"mid" },
-    core:      { crunch:"upper", plank:"upper", deadbug:"upper", abwheel:"upper", cablecrunch:"upper",
-                 legraise:"lower", revcrunch:"lower", hangraise:"lower",
+    core:      { crunch:"upper", plank:"upper", deadbug:"upper", abwheel:"upper", cablecrunch:"upper", vsit:"upper",
+                 legraise:"lower", revcrunch:"lower", hangraise:"lower", jackknife:"lower",
                  bicycle:"obliques", twist:"obliques", sideplank:"obliques", mountainclimber:"obliques" },
   };
 
