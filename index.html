@@ -310,6 +310,11 @@
   }
   .prog-entry-val { font-weight: 600; }
   .prog-entry-date { color: var(--text-dim); font-size: 0.78rem; }
+  .prog-entry-del {
+    background: none; border: none; cursor: pointer; color: var(--text-dim);
+    font-size: 0.85rem; padding: 0 0 0 10px; line-height: 1; flex-shrink: 0;
+  }
+  .prog-entry-del:active { color: var(--accent); }
 
   /* ---- Generate tab ---- */
   .wod-splits { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
@@ -1870,6 +1875,13 @@
     });
     if (currentTab === "progress") renderProgress();
   }
+  function deleteLog(id) {
+    const idx = LOGS.findIndex(l => l.id === id);
+    if (idx === -1) return;
+    LOGS.splice(idx, 1);
+    persistLogs();
+    renderProgress();
+  }
   function renderProgress() {
     const wrap = document.getElementById("progress-list");
     if (!LOGS.length) {
@@ -1921,6 +1933,7 @@
         return `<div class="prog-entry">
           <span class="prog-entry-val">${esc(val)}</span>
           <span class="prog-entry-date">${timeAgo(l.date)}</span>
+          <button class="prog-entry-del" onclick="deleteLog('${esc(l.id)}')" title="Remove">×</button>
         </div>`;
       }).join("");
 
@@ -1988,6 +2001,7 @@
     const split = WOD_SPLITS.find(s => s.key === wodSplit);
     if (!split) return;
     const groups = split.key === "custom" ? wodCustomGroups : split.groups;
+    const exPerGroup = groups.length <= 3 ? 2 : 1;
     const seen = new Set();
     const result = [];
 
@@ -1999,7 +2013,7 @@
         const j = Math.floor(Math.random() * (i + 1));
         [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
       }
-      const picks = candidates.slice(0, 2);
+      const picks = candidates.slice(0, exPerGroup);
       picks.forEach(id => seen.add(id));
       result.push(...picks);
     }
@@ -2007,6 +2021,21 @@
     wodResult = result;
     renderWodResult();
     document.getElementById("wod-result").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function estimateWorkoutMins(ids) {
+    let totalSecs = 5 * 60; // 5-min warmup buffer
+    for (const id of ids) {
+      const e = ALL[id]; if (!e) continue;
+      const sets = parseInt(e.sets) || 3;
+      const restSecs = parseInt(e.rest) || 60;
+      // time per set: use seconds value if timed (e.g. "30s"), else reps × 3s
+      const timedMatch = e.reps.match(/(\d+)s/i);
+      const repsMatch = e.reps.match(/(\d+)/);
+      const setTime = timedMatch ? parseInt(timedMatch[1]) : (repsMatch ? parseInt(repsMatch[1]) * 3 : 30);
+      totalSecs += sets * setTime + (sets - 1) * restSecs;
+    }
+    return Math.round(totalSecs / 60);
   }
 
   function renderWodResult() {
@@ -2031,9 +2060,11 @@
     }
     resultEl.innerHTML = html;
 
+    const mins = estimateWorkoutMins(wodResult);
     actionsEl.innerHTML = `
       <button class="wod-action-btn" onclick="generateWorkout()">↺ Regenerate</button>
-      <button class="wod-action-btn primary" onclick="saveWodAsRoutine()">Save as Routine</button>`;
+      <button class="wod-action-btn primary" onclick="saveWodAsRoutine()">Save as Routine</button>
+      <div style="width:100%;text-align:center;font-size:0.78rem;color:var(--text-dim);margin-top:6px">~${mins} min estimated</div>`;
   }
 
   function saveWodAsRoutine() {
