@@ -296,7 +296,8 @@ list of `"group:key"` item strings that must exist in `DATA`).
 
 ## Roadmap
 All planned phases are built. Smaller ideas still open: personalization (remember
-preferred body type, default equipment filter).
+preferred body type, default equipment filter), more exercises (ongoing content
+work), level filter (All / Beginner / Intermediate) if the library grows large.
 
 ### Done
 - **Generate tab — workout generator:** a ⚡ Generate tab where you pick a named
@@ -307,9 +308,12 @@ preferred body type, default equipment filter).
   Routine" pushes the result straight into your custom routines.
 - **Progress tab — workout logging:** a ✎ Log button on every exercise card opens
   an inline panel (adaptive: weight+reps / reps-only / time depending on the
-  exercise). Logs persist to `localStorage`. The 📈 Progress tab shows each
-  logged exercise with a personal-best callout, a div-based bar chart
-  (oldest→newest, peak bar highlighted), and a newest-first session list.
+  exercise). After saving, shows "Logged! [Start rest timer]" — tapping starts a
+  count-up timer that signals "Ready when you are!" at the exercise's rest duration.
+  Logs persist to `localStorage`. The 📈 Progress tab shows a 7-day activity strip
+  at the top, then each logged exercise with a personal-best callout, a div-based bar
+  chart (oldest→newest, peak bar highlighted), and a newest-first session list with
+  × delete + undo.
 - **Stretching:** a Stretches mode on the Exercises tab (warm-up/cool-down stretches
   per muscle, all 13 groups), stretches savable (Saved has All/Exercises/Stretches),
   and every routine auto-shows warm-up + cool-down blocks paired from the muscles it
